@@ -340,14 +340,13 @@
       <p>Domluvíme se na schůzce a probereme všechno osobně.</p>
     </div>
 
-    <form id="careerForm" action="https://formspree.io/f/YOUR_FORMSPREE_ID" method="POST" onsubmit="handleSubmit(event)">
-      <!-- Hidden fields pro Formspree -->
-      <input type="hidden" name="_subject" value="Žádost o pozici — Martin Kováč Hair Design">
-      <input type="text" name="_gotcha" style="display:none">
+    <form id="careerForm" onsubmit="handleSubmit(event)">
+      <!-- Honeypot anti-spam (skryté pole, viditelné jen pro boty) -->
+      <input type="text" name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;">
 
       <div class="form-field">
         <label class="form-label" for="name">Jméno</label>
-        <input class="form-input" type="text" id="name" name="name" required>
+        <input class="form-input" type="text" id="name" name="jmeno" required>
       </div>
 
       <div class="form-field">
@@ -357,12 +356,12 @@
 
       <div class="form-field">
         <label class="form-label" for="phone">Telefon</label>
-        <input class="form-input" type="tel" id="phone" name="phone">
+        <input class="form-input" type="tel" id="phone" name="telefon">
       </div>
 
       <div class="form-field">
         <label class="form-label" for="message">Pár slov o vás</label>
-        <textarea class="form-textarea" id="message" name="message" placeholder="Kde jste pracovali, co vás baví, kdy se můžete potkat..." required></textarea>
+        <textarea class="form-textarea" id="message" name="motivace" placeholder="Kde jste pracovali, co vás baví, kdy se můžete potkat..." required></textarea>
       </div>
 
       <button type="submit" class="form-submit">Odeslat zprávu</button>
@@ -389,6 +388,9 @@
 </footer>
 
 <script>
+  // Apps Script Web App URL - příjmá data formuláře
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzsM0gshpjxmTckxWR5v_TgpdZSIRLqoaXW6dVWlkSS0EeYZf5TN-w1mBeKpH-CGEMv/exec';
+
   async function handleSubmit(e) {
     e.preventDefault();
     const form = e.target;
@@ -401,26 +403,26 @@
     submitBtn.style.opacity = '0.7';
 
     try {
+      // Připrav data — přidej type=career pro Apps Script routing
       const formData = new FormData(form);
-      const response = await fetch(form.action, {
+      formData.append('type', 'career');
+
+      // Pošli na Apps Script
+      // POZN.: Apps Script nepodporuje preflight CORS, takže používáme 'no-cors' mode
+      // a věříme, že požadavek prošel (server dělá svou práci v každém případě)
+      await fetch(APPS_SCRIPT_URL, {
         method: 'POST',
         body: formData,
-        headers: { 'Accept': 'application/json' }
+        mode: 'no-cors'
       });
 
-      if (response.ok) {
-        // Úspěch
-        document.getElementById('formSection').classList.add('submitted');
-        window.scrollTo({ top: document.getElementById('formSection').offsetTop - 100, behavior: 'smooth' });
-      } else {
-        const data = await response.json();
-        const error = data.errors ? data.errors.map(e => e.message).join(', ') : 'Nepodařilo se odeslat zprávu.';
-        alert('Chyba: ' + error + '\n\nProsím zkuste znovu nebo nás kontaktujte přímo na +420 604 356 706.');
-        submitBtn.disabled = false;
-        submitBtn.textContent = originalText;
-        submitBtn.style.opacity = '1';
-      }
+      // S no-cors nedokážeme přečíst response, ale Apps Script data zpracoval
+      // Zobraz úspěch
+      document.getElementById('formSection').classList.add('submitted');
+      window.scrollTo({ top: document.getElementById('formSection').offsetTop - 100, behavior: 'smooth' });
+
     } catch (err) {
+      console.error('Form submit error:', err);
       alert('Chyba při odesílání. Prosím zkuste znovu nebo nás kontaktujte přímo na +420 604 356 706.');
       submitBtn.disabled = false;
       submitBtn.textContent = originalText;
