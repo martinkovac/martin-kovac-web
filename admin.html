@@ -1,0 +1,1794 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Administrace — Martin Kováč Hair Design</title>
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MK Admin">
+<meta name="theme-color" content="#1a1a1a">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500;600&display=swap&subset=latin-ext" rel="stylesheet">
+
+<style>
+:root{--gold:#C28840;--gold-light:#D9A761;--gold-dark:#A36F2E;--bg-cream:#FBF8F1;--bg-warm:#F5EFE2;--bg-deep:#EFE5D0;--bg-dark:#1a1a1a;--bg-darker:#0f0f0f;--text-primary:#1a1a1a;--text-secondary:#555;--text-muted:#888;--text-soft:#aaa;--border:#EFE5D0;--border-strong:#D9CFB8;--danger:#B85450;--success:#2A9D5F;--warning:#D4A124;--font-serif:'Playfair Display',Georgia,serif;--font-sans:'Inter',-apple-system,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-sans);background:var(--bg-cream);color:var(--text-primary);min-height:100vh;-webkit-font-smoothing:antialiased;line-height:1.5}
+
+.header{background:var(--bg-dark);color:var(--bg-cream);padding:18px 28px;display:flex;justify-content:space-between;align-items:center;border-bottom:0.5px solid var(--gold);position:sticky;top:0;z-index:100}
+.header-logo{display:flex;flex-direction:column;gap:4px}
+.header-logo-title{font-family:var(--font-serif);font-size:18px;font-style:italic;color:var(--bg-cream);letter-spacing:0.3px}
+.header-logo-subtitle{font-size:9px;letter-spacing:4px;color:var(--gold);text-transform:uppercase;font-weight:400}
+.header-actions{display:flex;align-items:center;gap:16px}
+.header-user{text-align:right;line-height:1.4}
+.header-user-email{color:var(--gold-light);display:block;font-weight:500;font-size:12px}
+.header-user-status{color:var(--text-muted);font-size:10px;font-style:italic}
+
+.btn-publish{background:transparent;color:var(--bg-cream);border:0.5px solid var(--gold);padding:9px 22px;border-radius:2px;font-family:var(--font-sans);font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all 0.2s ease;display:inline-flex;align-items:center;gap:8px;font-weight:400}
+.btn-publish:hover{background:var(--gold);color:var(--bg-dark)}
+.btn-publish svg{width:14px;height:14px}
+
+.tabs-bar{background:white;border-bottom:0.5px solid var(--border);padding:0 28px;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch;position:sticky;top:70px;z-index:99}
+.tabs{display:inline-flex;gap:0}
+.tab{background:none;border:none;padding:18px 18px;font-family:var(--font-sans);font-size:11px;letter-spacing:2.2px;text-transform:uppercase;color:var(--text-muted);cursor:pointer;border-bottom:1px solid transparent;transition:color 0.2s,border-color 0.2s;display:inline-flex;align-items:center;gap:8px;font-weight:400}
+.tab:hover{color:var(--text-primary)}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold);font-weight:500}
+.tab svg{width:13px;height:13px}
+
+.mini-web-bar{background:white;border-bottom:0.5px solid var(--border);padding:14px 28px;position:sticky;top:124px;z-index:98}
+.mini-web-toggle{display:flex;align-items:center;gap:10px;cursor:pointer;color:var(--text-muted);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;user-select:none;transition:color 0.2s}
+.mini-web-toggle:hover{color:var(--gold)}
+.mini-web-toggle svg{width:14px;height:14px;transition:transform 0.3s}
+.mini-web-toggle.expanded svg{transform:rotate(90deg)}
+.mini-web-canvas{max-height:0;overflow:hidden;transition:max-height 0.3s ease;background:var(--bg-cream);margin:0 -28px}
+.mini-web-canvas.expanded{max-height:520px}
+.mini-web-inner{padding:20px 28px}
+
+.container{max-width:1100px;margin:0 auto;padding:28px}
+.tab-pane{display:none}
+.tab-pane.active{display:block;animation:fadeIn 0.3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+.tab-intro{background:var(--bg-dark);color:var(--bg-cream);padding:20px 28px;border-radius:2px;margin-bottom:24px;display:flex;align-items:flex-start;gap:16px}
+.tab-intro-icon{flex-shrink:0;width:36px;height:36px;background:rgba(194,136,64,0.15);border:0.5px solid var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--gold)}
+.tab-intro-icon svg{width:18px;height:18px}
+.tab-intro-text{flex:1}
+.tab-intro-title{font-family:var(--font-serif);font-size:18px;font-style:italic;color:var(--gold-light);margin-bottom:4px}
+.tab-intro-desc{font-size:13px;color:var(--text-soft);line-height:1.6}
+
+.section-header{background:white;border:0.5px solid var(--border);padding:24px 32px;border-radius:2px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.section-header-text{flex:1}
+.section-eyebrow{color:var(--gold);font-size:9px;letter-spacing:4px;text-transform:uppercase;margin-bottom:8px;font-weight:500}
+.section-main-title{font-family:var(--font-serif);font-size:26px;font-weight:400;color:var(--text-primary);letter-spacing:-0.3px;margin-bottom:8px}
+.section-description{font-size:13px;color:var(--text-muted);line-height:1.6;font-style:italic}
+
+.btn-show-on-web{background:transparent;border:0.5px solid var(--border-strong);padding:8px 14px;border-radius:2px;font-size:11px;color:var(--text-muted);cursor:pointer;display:inline-flex;align-items:center;gap:6px;letter-spacing:0.5px;text-decoration:none;transition:all 0.2s;white-space:nowrap}
+.btn-show-on-web:hover{border-color:var(--gold);color:var(--gold)}
+.btn-show-on-web svg{width:13px;height:13px}
+
+.context-preview{background:white;border:0.5px solid var(--border);border-radius:2px;margin-bottom:16px;overflow:hidden}
+.context-preview-label{background:var(--bg-dark);padding:12px 20px;color:var(--bg-cream);font-size:10px;letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:10px}
+.context-preview-label svg{width:14px;height:14px;color:var(--gold)}
+.context-preview-canvas{background:var(--bg-darker);padding:24px 32px}
+.context-preview-mock{background:var(--bg-dark);border:1px solid var(--gold);padding:28px 24px;border-radius:4px;position:relative}
+.context-preview-tag{position:absolute;top:-10px;left:24px;background:var(--gold);color:var(--bg-dark);font-size:9px;padding:4px 12px;letter-spacing:2px;text-transform:uppercase;font-weight:500;border-radius:2px}
+.context-preview-active{border:2px dashed var(--gold);padding:18px 20px;border-radius:4px;background:rgba(194,136,64,0.06);margin-bottom:16px}
+.ctx-eyebrow{color:var(--gold);font-size:9px;letter-spacing:3px;text-transform:uppercase;margin-bottom:8px}
+.ctx-title{font-family:var(--font-serif);color:var(--bg-cream);font-size:22px;font-weight:400;line-height:1.2}
+.ctx-title em{color:var(--gold);font-style:italic}
+.context-preview-greyed{opacity:0.3}
+.context-preview-greyed-bar{background:#2a2a2a;height:7px;border-radius:1px;margin-bottom:6px}
+.context-preview-caption{text-align:center;color:var(--text-muted);font-size:10px;letter-spacing:2px;text-transform:uppercase;font-style:italic;margin-top:14px}
+
+.field-card{background:white;border:0.5px solid var(--border);border-radius:2px;margin-bottom:16px;overflow:hidden;transition:border-color 0.2s}
+.field-card:hover{border-color:var(--border-strong)}
+.field-header{padding:22px 32px 14px;border-bottom:0.5px solid var(--bg-warm)}
+.field-title-row{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.field-number{width:26px;height:26px;border-radius:50%;background:var(--gold);color:white;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;font-family:var(--font-serif);font-style:italic;flex-shrink:0}
+.field-title{font-family:var(--font-serif);font-size:18px;font-weight:400;color:var(--text-primary)}
+.field-subtitle{font-size:12px;color:var(--text-muted);margin-left:38px;font-style:italic;line-height:1.5}
+.field-body{padding:18px 32px 22px}
+
+.form-input,.form-textarea{width:100%;padding:12px 14px;font-family:var(--font-sans);font-size:14px;border:0.5px solid var(--border-strong);border-radius:2px;background:var(--bg-cream);color:var(--text-primary);outline:none;transition:border-color 0.2s,background 0.2s;box-sizing:border-box}
+.form-input:focus,.form-textarea:focus{border-color:var(--gold);background:white}
+.form-textarea{min-height:80px;resize:vertical;font-family:inherit;line-height:1.6}
+
+.field-meta{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.field-hint{font-size:11px;color:var(--text-soft);font-style:italic}
+.field-counter{font-size:10px;color:var(--text-soft);letter-spacing:1px}
+.field-counter.warning{color:var(--warning)}
+.field-counter.danger{color:var(--danger)}
+
+.field-preview{background:var(--bg-cream);border:0.5px solid var(--border);padding:14px 18px;margin-top:14px;border-radius:2px}
+.field-preview-label{color:var(--gold);font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
+.field-preview-content{font-family:var(--font-serif);font-size:18px;color:var(--text-primary);line-height:1.3}
+.field-preview-content em{color:var(--gold-dark);font-style:italic}
+
+.field-help{margin-top:14px}
+.field-help-toggle{background:none;border:none;color:var(--gold);cursor:pointer;font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:0;display:inline-flex;align-items:center;gap:6px;font-family:var(--font-sans);transition:color 0.2s}
+.field-help-toggle:hover{color:var(--gold-dark)}
+.field-help-toggle svg{width:12px;height:12px;transition:transform 0.2s}
+.field-help-toggle.expanded svg{transform:rotate(90deg)}
+.field-help-content{max-height:0;overflow:hidden;transition:max-height 0.4s ease}
+.field-help-content.expanded{max-height:800px}
+.field-help-inner{background:var(--bg-cream);padding:16px 18px;margin-top:10px;border-left:2px solid var(--gold);font-size:13px;color:var(--text-secondary);line-height:1.7}
+.help-section-label{font-size:10px;color:var(--text-muted);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:10px;font-weight:500}
+.help-example{font-family:var(--font-serif);font-size:16px;padding:6px 0;color:var(--text-primary)}
+.help-example em{color:var(--gold);font-style:italic}
+
+/* IMAGE UPLOAD */
+.upload-zone{background:var(--bg-cream);border:1.5px dashed var(--border-strong);border-radius:2px;padding:24px;text-align:center;cursor:pointer;transition:all 0.2s}
+.upload-zone:hover{border-color:var(--gold);background:var(--bg-warm)}
+.upload-zone svg{width:32px;height:32px;color:var(--gold);margin-bottom:8px}
+.upload-zone-text{font-size:13px;color:var(--text-muted);margin-bottom:4px}
+.upload-zone-hint{font-size:11px;color:var(--text-soft);font-style:italic}
+.upload-zone.has-image{padding:12px;border-style:solid;border-color:var(--border)}
+.upload-preview{display:flex;gap:14px;align-items:center}
+.upload-preview-img{width:80px;height:80px;background:var(--bg-warm);border-radius:2px;overflow:hidden;flex-shrink:0;border:0.5px solid var(--border)}
+.upload-preview-img img{width:100%;height:100%;object-fit:cover;display:block}
+.upload-preview-info{flex:1;text-align:left}
+.upload-preview-name{font-size:13px;color:var(--text-primary);margin-bottom:4px}
+.upload-preview-actions{display:flex;gap:8px;margin-top:6px}
+.upload-action-btn{background:none;border:0.5px solid var(--border-strong);padding:4px 10px;font-size:10px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;color:var(--text-muted);border-radius:2px;transition:all 0.2s}
+.upload-action-btn:hover{border-color:var(--gold);color:var(--gold)}
+.upload-action-btn.danger:hover{border-color:var(--danger);color:var(--danger)}
+
+.save-bar{position:sticky;bottom:16px;margin-top:24px;padding:14px 24px;background:white;border:0.5px solid var(--border);border-radius:2px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 4px 16px rgba(0,0,0,0.04)}
+.save-status{font-size:12px;color:var(--success);display:flex;align-items:center;gap:8px;font-style:italic}
+.save-status.unsaved{color:var(--warning)}
+.save-status svg{width:14px;height:14px}
+.btn-save{background:var(--bg-dark);color:var(--bg-cream);border:0.5px solid var(--bg-dark);padding:11px 26px;border-radius:2px;font-family:var(--font-sans);font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-weight:500;transition:all 0.2s}
+.btn-save:hover{background:var(--gold);border-color:var(--gold)}
+
+.wip-pane{background:white;border:0.5px solid var(--border);padding:60px 40px;text-align:center;border-radius:2px}
+.wip-pane svg{width:48px;height:48px;color:var(--gold);margin-bottom:16px}
+.wip-pane h3{font-family:var(--font-serif);font-size:22px;font-weight:400;color:var(--text-primary);margin-bottom:8px}
+.wip-pane p{color:var(--text-muted);font-size:14px;line-height:1.6;max-width:480px;margin:0 auto 16px;font-style:italic}
+.wip-pane .wip-badge{display:inline-block;background:rgba(194,136,64,0.1);color:var(--gold-dark);padding:6px 16px;border-radius:20px;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-top:8px}
+
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(120%);background:var(--bg-dark);color:var(--bg-cream);padding:14px 28px;border-radius:2px;font-size:12px;z-index:9999;transition:transform 0.3s ease;box-shadow:0 8px 24px rgba(0,0,0,0.2);letter-spacing:1px;display:flex;align-items:center;gap:10px}
+.toast.active{transform:translateX(-50%) translateY(0)}
+.toast.error{background:var(--danger)}
+.toast.success{background:var(--success)}
+.toast svg{width:14px;height:14px}
+
+.opening-hours-grid{display:grid;grid-template-columns:1fr 2fr;gap:8px 16px}
+.opening-hours-day{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px;padding:11px 0}
+.opening-hours-input{padding:9px 12px;font-size:13px}
+
+/* STYLISTÉ */
+.btn-add-stylist{background:var(--gold);color:white;border:none;padding:11px 22px;border-radius:2px;font-family:var(--font-sans);font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-weight:500;transition:all 0.2s;display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+.btn-add-stylist:hover{background:var(--gold-dark)}
+.btn-add-stylist:disabled{opacity:0.5;cursor:not-allowed}
+.btn-add-stylist svg{width:14px;height:14px}
+
+.stylist-card{background:white;border:0.5px solid var(--border);border-radius:2px;margin-bottom:20px;overflow:hidden;transition:border-color 0.2s}
+.stylist-card:hover{border-color:var(--border-strong)}
+.stylist-card.unsaved{border-color:var(--warning)}
+
+.stylist-card-header{background:var(--bg-warm);padding:16px 24px;display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:0.5px solid var(--border)}
+.stylist-card-title-row{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
+.stylist-card-badge{background:var(--gold);color:white;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-serif);font-style:italic;font-size:14px;flex-shrink:0}
+.stylist-card-name{font-family:var(--font-serif);font-size:18px;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stylist-card-name.empty{color:var(--text-soft);font-style:italic}
+.stylist-card-role-mini{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px;margin-left:8px}
+
+.stylist-card-actions{display:flex;gap:6px;flex-shrink:0}
+.stylist-action-btn{background:transparent;border:0.5px solid var(--border-strong);width:32px;height:32px;border-radius:2px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;color:var(--text-muted)}
+.stylist-action-btn:hover{border-color:var(--gold);color:var(--gold)}
+.stylist-action-btn:disabled{opacity:0.3;cursor:not-allowed}
+.stylist-action-btn.danger:hover{border-color:var(--danger);color:var(--danger)}
+.stylist-action-btn svg{width:14px;height:14px}
+
+.stylist-card-body{padding:24px}
+.stylist-fields{display:grid;grid-template-columns:160px 1fr;gap:20px}
+.stylist-photo-col{display:flex;flex-direction:column;align-items:center}
+.stylist-photo-zone{width:140px;height:140px;border:1.5px dashed var(--border-strong);border-radius:50%;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg-cream);transition:all 0.2s;overflow:hidden;position:relative}
+.stylist-photo-zone:hover{border-color:var(--gold);background:var(--bg-warm)}
+.stylist-photo-zone.has-photo{border-style:solid;border-color:var(--border);padding:0}
+.stylist-photo-zone img{width:100%;height:100%;object-fit:cover}
+.stylist-photo-zone svg{width:32px;height:32px;color:var(--gold);margin-bottom:6px}
+.stylist-photo-zone-text{font-size:10px;color:var(--text-muted);text-align:center;line-height:1.3;padding:0 8px}
+.stylist-photo-actions{margin-top:10px;display:flex;gap:6px;justify-content:center}
+
+.stylist-fields-col{display:flex;flex-direction:column;gap:14px}
+.stylist-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.stylist-field{display:flex;flex-direction:column;gap:6px}
+.stylist-field-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px;font-weight:500;display:flex;align-items:center;gap:6px}
+.stylist-field-input{width:100%;padding:10px 12px;font-family:var(--font-sans);font-size:13px;border:0.5px solid var(--border-strong);border-radius:2px;background:var(--bg-cream);color:var(--text-primary);outline:none;transition:border-color 0.2s,background 0.2s;box-sizing:border-box}
+.stylist-field-input:focus{border-color:var(--gold);background:white}
+.stylist-field-input.textarea{min-height:80px;resize:vertical;font-family:inherit;line-height:1.6}
+
+.stylist-stats-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.stylist-stat-group{background:var(--bg-cream);border:0.5px solid var(--border);padding:12px 14px;border-radius:2px}
+.stylist-stat-group-label{font-size:10px;color:var(--gold);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;font-weight:500}
+.stylist-stat-fields{display:grid;grid-template-columns:90px 1fr;gap:8px}
+
+.stylist-footer-checkbox{margin-top:16px;padding:14px 16px;background:var(--bg-cream);border:0.5px solid var(--border);border-radius:2px;display:flex;align-items:flex-start;gap:10px;cursor:pointer}
+.stylist-footer-checkbox input{margin-top:3px;cursor:pointer;accent-color:var(--gold)}
+.stylist-footer-checkbox-label{font-size:12px;color:var(--text-primary);line-height:1.5}
+.stylist-footer-checkbox-label strong{color:var(--gold-dark)}
+
+/* CENÍK — služby */
+.cenik-stylist-badge{background:var(--bg-cream);border:0.5px solid var(--border-strong);padding:8px 14px;border-radius:2px;font-size:12px;color:var(--text-primary);display:inline-flex;align-items:center;gap:6px}
+.cenik-stylist-badge.empty{color:var(--text-soft);font-style:italic;border-style:dashed}
+.cenik-stylist-badge-num{background:var(--gold);color:white;width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:600}
+
+.service-card{background:white;border:0.5px solid var(--border);border-radius:2px;margin-bottom:14px;overflow:hidden;transition:border-color 0.2s}
+.service-card:hover{border-color:var(--border-strong)}
+.service-card.unsaved{border-color:var(--warning)}
+.service-card.empty{opacity:0.55}
+.service-card-header{background:var(--bg-warm);padding:12px 20px;display:flex;align-items:center;gap:12px;border-bottom:0.5px solid var(--border)}
+.service-card-num{background:var(--gold);color:white;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-serif);font-style:italic;font-size:13px;flex-shrink:0}
+.service-card-title{flex:1;font-size:13px;color:var(--text-muted);font-style:italic}
+.service-card-toggle{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);cursor:pointer;user-select:none}
+.service-card-toggle input{accent-color:var(--gold);cursor:pointer}
+.service-card-body{padding:18px 20px}
+.service-name-row{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:10px}
+.service-prices-row{display:grid;gap:10px;margin-top:14px;padding-top:14px;border-top:0.5px dashed var(--border)}
+.service-price-field{display:flex;flex-direction:column;gap:4px}
+.service-price-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px;font-weight:500;display:flex;align-items:center;gap:6px}
+.service-price-input-wrap{position:relative}
+.service-price-input{width:100%;padding:8px 32px 8px 12px;font-family:var(--font-sans);font-size:13px;border:0.5px solid var(--border-strong);border-radius:2px;background:var(--bg-cream);color:var(--text-primary);outline:none;transition:border-color 0.2s,background 0.2s;box-sizing:border-box}
+.service-price-input:focus{border-color:var(--gold);background:white}
+.service-price-suffix{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--text-soft);pointer-events:none}
+
+@media (max-width:768px){
+  .stylist-fields{grid-template-columns:1fr;gap:16px}
+  .stylist-photo-col{align-items:flex-start}
+  .stylist-row{grid-template-columns:1fr;gap:10px}
+  .stylist-stats-row{grid-template-columns:1fr;gap:10px}
+  .stylist-card-header{padding:12px 16px}
+  .stylist-card-body{padding:18px}
+}
+
+@media (max-width:768px){
+  .container{padding:16px}
+  .header{padding:14px 18px}
+  .tabs-bar{padding:0 18px;top:64px}
+  .mini-web-bar{padding:12px 18px;top:110px}
+  .tab{padding:14px 12px;font-size:10px;letter-spacing:1.2px;gap:6px}
+  .header-user{display:none}
+  .section-header,.field-card,.context-preview{padding-left:18px;padding-right:18px}
+  .field-header{padding:18px 18px 12px}
+  .field-body{padding:14px 18px 18px}
+  .field-subtitle{margin-left:32px}
+  .opening-hours-grid{grid-template-columns:1fr;gap:4px}
+  .opening-hours-day{padding:4px 0 0}
+  .tab-intro{padding:14px 18px;flex-direction:column;gap:10px}
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-logo">
+    <span class="header-logo-title">Administrace</span>
+    <span class="header-logo-subtitle">— Martin Kováč Hair Design —</span>
+  </div>
+  <div class="header-actions">
+    <div class="header-user">
+      <span class="header-user-email" id="user-email">načítám…</span>
+      <span class="header-user-status">přihlášen administrátor</span>
+    </div>
+    <button class="btn-publish" id="btn-publish">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+      Publikovat
+    </button>
+  </div>
+</header>
+
+<div class="tabs-bar">
+  <div class="tabs">
+    <button class="tab active" data-tab="hlavni">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg>
+      Hlavní
+    </button>
+    <button class="tab" data-tab="styliste">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>
+      Stylisté
+    </button>
+    <button class="tab" data-tab="galerie">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M21 15l-5-5-9 9"/></svg>
+      Galerie
+    </button>
+    <button class="tab" data-tab="kolekce">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Kolekce
+    </button>
+    <button class="tab" data-tab="reference">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      Reference
+    </button>
+    <button class="tab" data-tab="cenik">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 100 7h5a3.5 3.5 0 110 7H6"/></svg>
+      Ceník
+    </button>
+    <button class="tab" data-tab="blog">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Blog
+    </button>
+    <button class="tab" data-tab="faq">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg>
+      Časté dotazy
+    </button>
+    <button class="tab" data-tab="nastaveni">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      Nastavení
+    </button>
+  </div>
+</div>
+
+<div class="mini-web-bar">
+  <div class="mini-web-toggle" id="mini-web-toggle">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    <span>Mapa webu — klikni na sekci kterou chceš upravit</span>
+  </div>
+  <div class="mini-web-canvas" id="mini-web-canvas">
+    <div class="mini-web-inner" id="mini-web-svg-container"></div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ========== TAB: HLAVNÍ ========== -->
+<div class="tab-pane active" id="pane-hlavni">
+
+<div class="tab-intro">
+  <div class="tab-intro-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg>
+  </div>
+  <div class="tab-intro-text">
+    <div class="tab-intro-title">Hlavní strana webu</div>
+    <div class="tab-intro-desc">Tady upravíte úvodní slogan, sekci „O salonu", osobní vyznání a závěrečný citát. To je to, co klientka uvidí jako první.</div>
+  </div>
+</div>
+
+<!-- ÚVOD WEBU -->
+<div class="section-header" id="section-hero">
+  <div class="section-header-text">
+    <div class="section-eyebrow">— první sekce webu —</div>
+    <h2 class="section-main-title">Úvod webu</h2>
+    <p class="section-description">To první, co klientka vidí, když přijde na váš web.</p>
+  </div>
+  <a href="https://martinkovachairdesign.cz" target="_blank" class="btn-show-on-web" rel="noopener">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+    Zobrazit na webu
+  </a>
+</div>
+
+<div class="context-preview">
+  <div class="context-preview-label">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg>
+    Kde tohle uvidí klientka
+  </div>
+  <div class="context-preview-canvas">
+    <div class="context-preview-mock">
+      <span class="context-preview-tag">→ právě upravujete</span>
+      <div class="context-preview-active">
+        <div class="ctx-eyebrow" id="ctx-hero-eyebrow">— luxusní kadeřnictví v plzni —</div>
+        <div class="ctx-title" id="ctx-hero-title">Účes je jako <em>šaty.</em></div>
+      </div>
+      <div class="context-preview-greyed">
+        <div class="context-preview-greyed-bar" style="width:60%"></div>
+        <div class="context-preview-greyed-bar" style="width:80%"></div>
+        <div class="context-preview-greyed-bar" style="width:40%"></div>
+      </div>
+    </div>
+    <div class="context-preview-caption">— tak to vidí klientka na webu —</div>
+  </div>
+</div>
+
+<div class="field-card">
+  <div class="field-header">
+    <div class="field-title-row"><div class="field-number">1</div><h3 class="field-title">Malý nadpis nahoře</h3></div>
+    <p class="field-subtitle">Krátký zlatý text úplně nahoře — obvykle 2-4 slova s pomlčkami.</p>
+  </div>
+  <div class="field-body">
+    <input type="text" class="form-input" data-field="hero_eyebrow" data-preview="ctx-hero-eyebrow" placeholder="— luxusní kadeřnictví v plzni —" maxlength="60">
+    <div class="field-help">
+      <button class="field-help-toggle" data-action="toggle-help">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><polyline points="9 18 15 12 9 6"/></svg>
+        Příklady &amp; tipy
+      </button>
+      <div class="field-help-content">
+        <div class="field-help-inner">
+          <span class="help-section-label">Příklady které fungují</span>
+          <div class="help-example"><em>— luxusní kadeřnictví v plzni —</em></div>
+          <div class="help-example"><em>— salon martina kováče —</em></div>
+          <div class="help-example"><em>— více než 10 let zkušeností —</em></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="field-card">
+  <div class="field-header">
+    <div class="field-title-row"><div class="field-number">2</div><h3 class="field-title">Hlavní velký nadpis (slogan)</h3></div>
+    <p class="field-subtitle">Velký nápis přes půl obrazovky. Hlavní slogan vašeho salonu.</p>
+  </div>
+  <div class="field-body">
+    <textarea class="form-textarea" data-field="hero_title" data-preview="ctx-hero-title" data-italic="true" placeholder="Účes je jako *šaty.*" maxlength="200"></textarea>
+    <div class="field-meta">
+      <span class="field-hint">Zlatá kurzíva = mezi *hvězdičkami*</span>
+      <span class="field-counter" id="counter-hero_title">0 / 200</span>
+    </div>
+    <div class="field-preview">
+      <div class="field-preview-label">▼ náhled změny</div>
+      <div class="field-preview-content" id="preview-hero_title">…</div>
+    </div>
+  </div>
+</div>
+
+<div class="field-card">
+  <div class="field-header">
+    <div class="field-title-row"><div class="field-number">3</div><h3 class="field-title">Text na kartičce s kontaktem</h3></div>
+    <p class="field-subtitle">Nápis na malé kartičce v úvodu webu — vyzývá klientku k rezervaci.</p>
+  </div>
+  <div class="field-body">
+    <input type="text" class="form-input" data-field="hero_card_title" data-italic="true" placeholder="U koho si přejete *termín?*" maxlength="100">
+    <div class="field-meta"><span class="field-hint">Zlatá kurzíva = mezi *hvězdičkami*</span></div>
+  </div>
+</div>
+
+<!-- HERO FOTKA -->
+<div class="field-card">
+  <div class="field-header">
+    <div class="field-title-row"><div class="field-number">4</div><h3 class="field-title">Hlavní fotka úvodu</h3></div>
+    <p class="field-subtitle">Velká fotka která bude na pravé straně úvodu — atmosféra salonu, interiér, detail.</p>
+  </div>
+  <div class="field-body">
+    <div class="upload-zone" id="hero-photo-zone" onclick="document.getElementById('hero-photo-input').click()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M21 15l-5-5-9 9"/></svg>
+      <div class="upload-zone-text">Klikněte pro nahrání fotky úvodu</div>
+      <div class="upload-zone-hint">Doporučení: 800×900 px, JPG nebo PNG, max 5 MB</div>
+    </div>
+    <input type="file" id="hero-photo-input" accept="image/*" style="display:none" onchange="handlePhotoUpload(this, 'hero_photo', 'hero-photo-zone')">
+  </div>
+</div>
+
+<!-- O SALONU -->
+<div class="section-header" id="section-about" style="margin-top:40px">
+  <div class="section-header-text">
+    <div class="section-eyebrow">— sekce o salonu —</div>
+    <h2 class="section-main-title">O salonu</h2>
+    <p class="section-description">Krátký popis salonu, jeho ducha a přístupu k práci.</p>
+  </div>
+</div>
+
+<div class="field-card">
+  <div class="field-header">
+    <div class="field-title-row"><div class="field-number">1</div><h3 class="field-title">Malý nadpis nahoře</h3></div>
+    <p class="field-subtitle">Zlatý text nad velkým nadpisem.</p>
+  </div>
+  <div class="field-body">
+    <input type="text" class="form-input" data-field="about_eyebrow" placeholder="— o salonu —" maxlength="60">
+  </div>
+</div>
+
+<div class="field-card">
+  <div class="field-header">
+    <div class="field-title-row"><div class="field-number">2</div><h3 class="field-title">Hlavní nadpis sekce</h3></div>
+    <p class="field-subtitle">Větší nadpis pro sekci O salonu.</p>
+  </div>
+  <div class="field-body">
+    <textarea class="form-textarea" data-field="about_title" data-italic="true" placeholder="Řemeslo, které *roste s vámi.*" maxlength="200"></textarea>
+    <div class="field-meta">
+      <span class="field-hint">Zlatá kurzíva = mezi *hvězdičkami*</span>
+      <span class="field-counter" id="counter-about_title">0 / 200</span>
+    </div>
+    <div class="field-preview">
+      <div class="field-preview-label">▼ náhled změny</div>
+      <div class="field-preview-content" id="preview-about_title">…</div>
+    </div>
+  </div>
+</div>
+
+<div class="field-card">
+  <div class="field-header">
+    <div class="field-title-row"><div class="field-number">3</div><h3 class="field-title">Hlavní text — co o salonu vyprávíte</h3></div>
+    <p class="field-subtitle">1-2 odstavce. Pro nový odstavec stiskněte Enter dvakrát.</p>
+  </div>
+  <div class="field-body">
+    <textarea class="form-textarea" data-field="about_text" style="min-height:160px" placeholder="Náš salon stojí na principu: každá hlava je jiná..." maxlength="1500"></textarea>
+    <div class="field-meta">
+      <span class="field-hint">2-4 věty na odstavec</span>
+      <span class="field-counter" id="counter-about_text">0 / 1500</span>
+    </div>
+  </div>
+</div>
+
+<!-- PROČ TO DĚLÁM -->
+<div class="section-header" id="section-why" style="margin-top:40px">
+  <div class="section-header-text">
+    <div class="section-eyebrow">— osobní vyznání —</div>
+    <h2 class="section-main-title">Proč to dělám</h2>
+    <p class="section-description">Osobní vzkaz Martina, proč dělá kadeřnictví. Přidává salonu duši.</p>
+  </div>
+</div>
+
+<div class="field-card">
+  <div class="field-header">
+    <div class="field-title-row"><div class="field-number">1</div><h3 class="field-title">Štítek nahoře</h3></div>
+    <p class="field-subtitle">Velkými písmeny: PROČ TO DĚLÁM, MÁ FILOZOFIE, atd.</p>
+  </div>
+  <div class="field-body">
+    <input type="text" class="form-input" data-field="why_label" placeholder="PROČ TO DĚLÁM" maxlength="40">
+  </div>
+</div>
+
+<div class="field-card">
+  <div class="field-header">
+    <div class="field-title-row"><div class="field-number">2</div><h3 class="field-title">Nadpis vyznání</h3></div>
+    <p class="field-subtitle">Krátký, výstižný nadpis.</p>
+  </div>
+  <div class="field-body">
+    <input type="text" class="form-input" data-field="why_title" placeholder="Není to o trendu měsíce." maxlength="100">
+  </div>
+</div>
+
+<div class="field-card">
+  <div class="field-header">
+    <div class="field-title-row"><div class="field-number">3</div><h3 class="field-title">První odstavec</h3></div>
+    <p class="field-subtitle">3-5 vět. Píše se v první osobě (já, mě, můj).</p>
+  </div>
+  <div class="field-body">
+    <textarea class="form-textarea" data-field="why_text_1" style="min-height:120px" maxlength="800"></textarea>
+    <div class="field-meta">
+      <span class="field-hint">První odstavec vyznání</span>
+      <span class="field-counter" id="counter-why_text_1">0 / 800</span>
+    </div>
+  </div>
+</div>
+
+<div class="field-card">
+  <div class="field-header">
+    <div class="field-title-row"><div class="field-number">4</div><h3 class="field-title">Druhý odstavec</h3></div>
+    <p class="field-subtitle">Pokud nechcete druhý odstavec, nechte prázdné.</p>
+  </div>
+  <div class="field-body">
+    <textarea class="form-textarea" data-field="why_text_2" style="min-height:120px" maxlength="800"></textarea>
+    <div class="field-meta">
+      <span class="field-hint">Druhý odstavec vyznání (volitelné)</span>
+      <span class="field-counter" id="counter-why_text_2">0 / 800</span>
+    </div>
+  </div>
+</div>
+
+<div class="field-card">
+  <div class="field-header">
+    <div class="field-title-row"><div class="field-number">5</div><h3 class="field-title">Podpis</h3></div>
+    <p class="field-subtitle">Jméno autora vyznání. Obvykle "Martin".</p>
+  </div>
+  <div class="field-body">
+    <input type="text" class="form-input" data-field="why_signature" placeholder="Martin" maxlength="40">
+  </div>
+</div>
+
+<!-- ZÁVĚREČNÝ CITÁT -->
+<div class="section-header" id="section-closing" style="margin-top:40px">
+  <div class="section-header-text">
+    <div class="section-eyebrow">— závěr webu —</div>
+    <h2 class="section-main-title">Závěrečný citát</h2>
+    <p class="section-description">Citát před patičkou, který shrnuje filozofii salonu.</p>
+  </div>
+</div>
+
+<div class="field-card">
+  <div class="field-header">
+    <div class="field-title-row"><div class="field-number">1</div><h3 class="field-title">Citát</h3></div>
+    <p class="field-subtitle">Krátký citát klientky uvidí těsně před koncem stránky.</p>
+  </div>
+  <div class="field-body">
+    <textarea class="form-textarea" data-field="closing_quote" data-italic="true" placeholder="Účes není dekorace. Je to *poslední věc...*" maxlength="300"></textarea>
+    <div class="field-meta">
+      <span class="field-hint">Zlatá kurzíva = mezi *hvězdičkami*</span>
+      <span class="field-counter" id="counter-closing_quote">0 / 300</span>
+    </div>
+  </div>
+</div>
+
+<div class="field-card">
+  <div class="field-header">
+    <div class="field-title-row"><div class="field-number">2</div><h3 class="field-title">Podpis pod citátem</h3></div>
+    <p class="field-subtitle">Jméno autora citátu. Obvykle "Martin".</p>
+  </div>
+  <div class="field-body">
+    <input type="text" class="form-input" data-field="closing_author" placeholder="Martin" maxlength="40">
+  </div>
+</div>
+
+<div class="save-bar">
+  <div class="save-status" id="save-status-hlavni">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 6L9 17l-5-5"/></svg>
+    <span>Vše uloženo</span>
+  </div>
+  <button class="btn-save" data-action="save-texts" data-tab="hlavni">Uložit změny</button>
+</div>
+
+</div>
+
+<!-- ========== TAB: STYLISTÉ ========== -->
+<div class="tab-pane" id="pane-styliste">
+  <div class="wip-pane">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>
+    <h3>Tab Stylisté</h3>
+    <p>Karty pro Martina, Renatu a další stylisty — jméno, telefon, Instagram, portrét. Dynamicky přidávat/mazat. Max 6 stylistů.</p>
+    <div class="wip-badge">připravujeme — Balíček 2B</div>
+  </div>
+</div>
+
+<!-- ========== TAB: GALERIE ========== -->
+<div class="tab-pane" id="pane-galerie">
+  <div class="wip-pane">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M21 15l-5-5-9 9"/></svg>
+    <h3>Tab Galerie</h3>
+    <p>Mozaiková galerie fotek prací — upload, řazení, dekorativní prvky. Bude napojen existující galerie admin.</p>
+    <div class="wip-badge">připravujeme — Balíček 2D</div>
+  </div>
+</div>
+
+<!-- ========== TAB: KOLEKCE ========== -->
+<div class="tab-pane" id="pane-kolekce">
+  <div class="wip-pane">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    <h3>Tab Kolekce</h3>
+    <p>4 nominované kolekce (Originals, Red Woman, Pure &amp; Wild, The Runway) — nadpis sekce + texty každé kolekce.</p>
+    <div class="wip-badge">připravujeme — Balíček 2D</div>
+  </div>
+</div>
+
+<!-- ========== TAB: REFERENCE ========== -->
+<div class="tab-pane" id="pane-reference">
+  <div class="wip-pane">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+    <h3>Tab Reference</h3>
+    <p>Citáty od klientek (text + jméno) + upload screenshotů Google recenzí. Dynamicky přidávat/mazat.</p>
+    <div class="wip-badge">připravujeme — Balíček 2D</div>
+  </div>
+</div>
+
+<!-- ========== TAB: CENÍK ========== -->
+<div class="tab-pane" id="pane-cenik">
+
+<div class="tab-intro">
+  <div class="tab-intro-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 100 7h5a3.5 3.5 0 110 7H6"/></svg>
+  </div>
+  <div class="tab-intro-text">
+    <div class="tab-intro-title">Ceník služeb</div>
+    <div class="tab-intro-desc">Tady upravujete služby, jejich popis a ceny u jednotlivých stylistů. Až 12 služeb. Sloupce stylistů se generují automaticky podle Tabu Stylisté. Prázdné slu&#382;by se na webu nezobrazí.</div>
+  </div>
+</div>
+
+<!-- Nadpisy sekce -->
+<div class="section-header" id="section-cenik-header">
+  <div class="section-header-text">
+    <div class="section-eyebrow">— nadpisy sekce —</div>
+    <h2 class="section-main-title">Nadpisy sekce Ceník</h2>
+    <p class="section-description">Texty které se zobrazí nad cenovou tabulkou.</p>
+  </div>
+  <a href="https://martinkovachairdesign.cz#cenik" target="_blank" class="btn-show-on-web" rel="noopener">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+    Zobrazit na webu
+  </a>
+</div>
+
+<div class="field-card">
+  <div class="field-header">
+    <div class="field-title-row"><div class="field-number">1</div><h3 class="field-title">Malý nadpis (eyebrow)</h3></div>
+    <p class="field-subtitle">Zlatý text nad velkým nadpisem sekce ceníku.</p>
+  </div>
+  <div class="field-body">
+    <input type="text" class="form-input" data-field="cenik_eyebrow" data-section="cenik" placeholder="— ceník —" maxlength="60">
+  </div>
+</div>
+
+<div class="field-card">
+  <div class="field-header">
+    <div class="field-title-row"><div class="field-number">2</div><h3 class="field-title">Velký nadpis sekce</h3></div>
+    <p class="field-subtitle">Hlavní nadpis nad ceníkem.</p>
+  </div>
+  <div class="field-body">
+    <input type="text" class="form-input" data-field="cenik_title" data-section="cenik" data-italic="true" placeholder="Naše služby a *ceny.*" maxlength="200">
+    <div class="field-meta"><span class="field-hint">Zlatá kurzíva = mezi *hvězdičkami*</span></div>
+  </div>
+</div>
+
+<div class="field-card">
+  <div class="field-header">
+    <div class="field-title-row"><div class="field-number">3</div><h3 class="field-title">Podtext (volitelné)</h3></div>
+    <p class="field-subtitle">Krátký text pod nadpisem, pokud chcete.</p>
+  </div>
+  <div class="field-body">
+    <input type="text" class="form-input" data-field="cenik_subtitle" data-section="cenik" placeholder="(volitelné)" maxlength="200">
+  </div>
+</div>
+
+<!-- Stylisté info -->
+<div class="section-header" id="section-cenik-stylists-info" style="margin-top:40px">
+  <div class="section-header-text">
+    <div class="section-eyebrow">— sloupce stylistů —</div>
+    <h2 class="section-main-title">Stylisté v ceníku</h2>
+    <p class="section-description">Sloupce ceníku se generují automaticky podle aktivních stylistů. Pořadí a jména upravíte v Tabu Stylisté.</p>
+  </div>
+</div>
+
+<div class="field-card">
+  <div class="field-body">
+    <div id="cenik-stylists-list" style="display:flex;gap:14px;flex-wrap:wrap;">
+      <div style="color:var(--text-muted);font-style:italic;font-size:13px;">Načítám stylisty…</div>
+    </div>
+  </div>
+</div>
+
+<!-- Služby -->
+<div class="section-header" id="section-cenik-services" style="margin-top:40px">
+  <div class="section-header-text">
+    <div class="section-eyebrow">— seznam služeb —</div>
+    <h2 class="section-main-title">Služby a ceny</h2>
+    <p class="section-description">Až 12 služeb. Prázdné sloty se na webu nezobrazí. Vyplňte aspoň jednu cenu u stylisty pro každou službu.</p>
+  </div>
+</div>
+
+<div id="services-container">
+  <div style="text-align:center;padding:40px;color:var(--text-muted);font-style:italic;">
+    Načítám služby…
+  </div>
+</div>
+
+<!-- Co je v ceně -->
+<div class="section-header" id="section-cenik-included" style="margin-top:40px">
+  <div class="section-header-text">
+    <div class="section-eyebrow">— bonus pro klientky —</div>
+    <h2 class="section-main-title">Co je v ceně</h2>
+    <p class="section-description">Text který se zobrazí pod ceníkem — co všechno klientka v ceně dostane.</p>
+  </div>
+</div>
+
+<div class="field-card">
+  <div class="field-header">
+    <div class="field-title-row"><div class="field-number">1</div><h3 class="field-title">Co je v ceně</h3></div>
+    <p class="field-subtitle">Volný text. Pro nový odstavec stiskněte Enter dvakrát.</p>
+  </div>
+  <div class="field-body">
+    <textarea class="form-textarea" data-field="cenik_included" data-section="cenik" style="min-height:120px" placeholder="V ceně každého úkonu je konzultace, mytí, regenerační maska a finální úprava účesu." maxlength="800"></textarea>
+    <div class="field-meta">
+      <span class="field-hint">Stručně, 1-3 věty</span>
+      <span class="field-counter" id="counter-cenik_included">0 / 800</span>
+    </div>
+  </div>
+</div>
+
+<!-- Poznámka pod ceníkem -->
+<div class="section-header" id="section-cenik-note" style="margin-top:40px">
+  <div class="section-header-text">
+    <div class="section-eyebrow">— pod ceníkem —</div>
+    <h2 class="section-main-title">Poznámka pod ceníkem</h2>
+    <p class="section-description">Krátký text úplně pod cenovou tabulkou (volitelné).</p>
+  </div>
+</div>
+
+<div class="field-card">
+  <div class="field-header">
+    <div class="field-title-row"><div class="field-number">1</div><h3 class="field-title">Poznámka (volitelné)</h3></div>
+    <p class="field-subtitle">Např. "Ceny jsou orientační. Závaznou kalkulaci dostanete při konzultaci."</p>
+  </div>
+  <div class="field-body">
+    <input type="text" class="form-input" data-field="cenik_note" data-section="cenik" placeholder="(volitelné)" maxlength="200">
+  </div>
+</div>
+
+<div class="save-bar">
+  <div class="save-status" id="save-status-cenik">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 6L9 17l-5-5"/></svg>
+    <span>Vše uloženo</span>
+  </div>
+  <button class="btn-save" data-action="save-cenik">Uložit změny</button>
+</div>
+
+</div>
+
+<!-- ========== TAB: BLOG ========== -->
+<div class="tab-pane" id="pane-blog">
+  <div class="wip-pane">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>
+    <h3>Tab Blog</h3>
+    <p>4 článkové karty (nadpis + popis) + nadpisy sekce. Dynamicky přidávat/mazat.</p>
+    <div class="wip-badge">připravujeme — Balíček 2D</div>
+  </div>
+</div>
+
+<!-- ========== TAB: FAQ ========== -->
+<div class="tab-pane" id="pane-faq">
+  <div class="wip-pane">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg>
+    <h3>Tab Časté dotazy</h3>
+    <p>FAQ — otázky a odpovědi. Dynamicky přidávat/mazat. Nadpisy sekce.</p>
+    <div class="wip-badge">připravujeme — Balíček 2D</div>
+  </div>
+</div>
+
+<!-- ========== TAB: NASTAVENÍ ========== -->
+<div class="tab-pane" id="pane-nastaveni">
+
+<div class="tab-intro">
+  <div class="tab-intro-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+  </div>
+  <div class="tab-intro-text">
+    <div class="tab-intro-title">Globální nastavení webu</div>
+    <div class="tab-intro-desc">Tady upravíte věci které platí pro CELÝ web — kontakty, adresu, otevírací dobu, IČO a cookies. Pozor: telefony stylistů upravíte v Tabu Stylisté, nikoli tady.</div>
+  </div>
+</div>
+
+<div class="section-header" id="section-contact">
+  <div class="section-header-text">
+    <div class="section-eyebrow">— globální kontakty —</div>
+    <h2 class="section-main-title">Kontakty pro patičku &amp; SEO</h2>
+    <p class="section-description">Email a Instagram pro patičku webu. Telefony stylistů najdete v Tabu Stylisté.</p>
+  </div>
+</div>
+
+<div class="field-card">
+  <div class="field-header">
+    <div class="field-title-row"><div class="field-number">1</div><h3 class="field-title">Email</h3></div>
+    <p class="field-subtitle">Hlavní email salonu pro klientky a obchodní kontakty.</p>
+  </div>
+  <div class="field-body">
+    <input type="email" class="form-input" data-field="email" placeholder="info@martinkovachairdesign.cz">
+  </div>
+</div>
+
+<div class="field-card">
+  <div class="field-header">
+    <div class="field-title-row"><div class="field-number">2</div><h3 class="field-title">Instagram salonu</h3></div>
+    <p class="field-subtitle">Hlavní Instagram salonu (pro patičku). Instagram stylistů je v Tabu Stylisté.</p>
+  </div>
+  <div class="field-body">
+    <input type="text" class="form-input" data-field="instagram" placeholder="martinkovac_hairdesign">
+    <div class="field-meta"><span class="field-hint">Bez "@" znaku — jen samotný username</span></div>
+  </div>
+</div>
+
+<div class="section-header" id="section-address" style="margin-top:40px">
+  <div class="section-header-text">
+    <div class="section-eyebrow">— umístění —</div>
+    <h2 class="section-main-title">Adresa salonu</h2>
+    <p class="section-description">Kde salon klientky najdou.</p>
+  </div>
+</div>
+
+<div class="field-card">
+  <div class="field-header">
+    <div class="field-title-row"><div class="field-number">1</div><h3 class="field-title">Ulice a číslo popisné</h3></div>
+    <p class="field-subtitle">Adresa salonu.</p>
+  </div>
+  <div class="field-body">
+    <input type="text" class="form-input" data-field="street" placeholder="Sedláčkova 39">
+  </div>
+</div>
+
+<div class="field-card">
+  <div class="field-header">
+    <div class="field-title-row"><div class="field-number">2</div><h3 class="field-title">PSČ a město</h3></div>
+    <p class="field-subtitle">Poštovní směrovací číslo a město.</p>
+  </div>
+  <div class="field-body">
+    <div style="display:grid;grid-template-columns:120px 1fr;gap:12px">
+      <input type="text" class="form-input" data-field="zip" placeholder="301 00" maxlength="6">
+      <input type="text" class="form-input" data-field="city" placeholder="Plzeň">
+    </div>
+  </div>
+</div>
+
+<div class="field-card">
+  <div class="field-header">
+    <div class="field-title-row"><div class="field-number">3</div><h3 class="field-title">Google Maps — odkaz</h3></div>
+    <p class="field-subtitle">URL odkaz Google mapy. Vyhledejte salon v Google mapách → klik Sdílet → zkopírujte odkaz.</p>
+  </div>
+  <div class="field-body">
+    <input type="text" class="form-input" data-field="google_maps_url" placeholder="https://maps.google.com/?q=Sedláčkova+39+Plzeň">
+    <div class="field-meta"><span class="field-hint">Pokud zůstane prázdné, použije se adresa výše</span></div>
+  </div>
+</div>
+
+<div class="section-header" id="section-hours" style="margin-top:40px">
+  <div class="section-header-text">
+    <div class="section-eyebrow">— otevírací doba —</div>
+    <h2 class="section-main-title">Kdy je salon otevřený</h2>
+    <p class="section-description">Pro každý den napište čas, např. <em>9:00 — 18:00</em> nebo <em>Zavřeno</em>.</p>
+  </div>
+</div>
+
+<div class="field-card">
+  <div class="field-body">
+    <div class="opening-hours-grid">
+      <div class="opening-hours-day">Pondělí</div>
+      <input type="text" class="form-input opening-hours-input" data-field="hours_mon" placeholder="9:00 — 18:00">
+      <div class="opening-hours-day">Úterý</div>
+      <input type="text" class="form-input opening-hours-input" data-field="hours_tue" placeholder="9:00 — 18:00">
+      <div class="opening-hours-day">Středa</div>
+      <input type="text" class="form-input opening-hours-input" data-field="hours_wed" placeholder="9:00 — 18:00">
+      <div class="opening-hours-day">Čtvrtek</div>
+      <input type="text" class="form-input opening-hours-input" data-field="hours_thu" placeholder="9:00 — 18:00">
+      <div class="opening-hours-day">Pátek</div>
+      <input type="text" class="form-input opening-hours-input" data-field="hours_fri" placeholder="9:00 — 18:00">
+      <div class="opening-hours-day">Sobota</div>
+      <input type="text" class="form-input opening-hours-input" data-field="hours_sat" placeholder="dle dohody">
+      <div class="opening-hours-day">Neděle</div>
+      <input type="text" class="form-input opening-hours-input" data-field="hours_sun" placeholder="Zavřeno">
+    </div>
+  </div>
+</div>
+
+<div class="field-card">
+  <div class="field-header">
+    <div class="field-title-row"><div class="field-number">1</div><h3 class="field-title">Popisek u otevírací doby</h3></div>
+    <p class="field-subtitle">Krátký text který se zobrazí pod hodinami v kontaktní sekci.</p>
+  </div>
+  <div class="field-body">
+    <input type="text" class="form-input" data-field="hours_label" placeholder="Termíny dle dohody" maxlength="80">
+  </div>
+</div>
+
+<div class="field-card">
+  <div class="field-header">
+    <div class="field-title-row"><div class="field-number">2</div><h3 class="field-title">Popisek pod hodinami</h3></div>
+    <p class="field-subtitle">Sekundární text — např. způsob rezervace.</p>
+  </div>
+  <div class="field-body">
+    <input type="text" class="form-input" data-field="hours_sublabel" placeholder="Rezervace telefonicky nebo přes WhatsApp." maxlength="120">
+  </div>
+</div>
+
+<div class="section-header" id="section-legal" style="margin-top:40px">
+  <div class="section-header-text">
+    <div class="section-eyebrow">— právní údaje —</div>
+    <h2 class="section-main-title">Provozovatel</h2>
+    <p class="section-description">Povinné údaje pro patičku webu.</p>
+  </div>
+</div>
+
+<div class="field-card">
+  <div class="field-header">
+    <div class="field-title-row"><div class="field-number">1</div><h3 class="field-title">IČO</h3></div>
+    <p class="field-subtitle">Identifikační číslo provozovatele.</p>
+  </div>
+  <div class="field-body">
+    <input type="text" class="form-input" data-field="ico" placeholder="04167473" maxlength="10">
+  </div>
+</div>
+
+<div class="field-card">
+  <div class="field-header">
+    <div class="field-title-row"><div class="field-number">2</div><h3 class="field-title">Provozovatel — celé jméno</h3></div>
+    <p class="field-subtitle">Celé jméno odpovědné osoby. Zobrazí se v patičce u IČO.</p>
+  </div>
+  <div class="field-body">
+    <input type="text" class="form-input" data-field="owner_name" placeholder="Martin Kováč">
+  </div>
+</div>
+
+<div class="section-header" id="section-contact-header" style="margin-top:40px">
+  <div class="section-header-text">
+    <div class="section-eyebrow">— sekce kontakt na webu —</div>
+    <h2 class="section-main-title">Nadpisy sekce Kontakt</h2>
+    <p class="section-description">Texty které se zobrazí nad mapou a kontakty na webu.</p>
+  </div>
+</div>
+
+<div class="field-card">
+  <div class="field-header">
+    <div class="field-title-row"><div class="field-number">1</div><h3 class="field-title">Malý nadpis (eyebrow)</h3></div>
+    <p class="field-subtitle">Zlatý text nad velkým nadpisem.</p>
+  </div>
+  <div class="field-body">
+    <input type="text" class="form-input" data-field="contact_eyebrow" placeholder="— kontakt —" maxlength="60">
+  </div>
+</div>
+
+<div class="field-card">
+  <div class="field-header">
+    <div class="field-title-row"><div class="field-number">2</div><h3 class="field-title">Velký nadpis</h3></div>
+    <p class="field-subtitle">Hlavní nadpis sekce kontakt.</p>
+  </div>
+  <div class="field-body">
+    <input type="text" class="form-input" data-field="contact_title" data-italic="true" placeholder="Najdete nás *v centru Plzně.*" maxlength="200">
+    <div class="field-meta"><span class="field-hint">Zlatá kurzíva = mezi *hvězdičkami*</span></div>
+  </div>
+</div>
+
+<div class="field-card">
+  <div class="field-header">
+    <div class="field-title-row"><div class="field-number">3</div><h3 class="field-title">Podtext pod nadpisem</h3></div>
+    <p class="field-subtitle">Krátký text který se zobrazí pod hlavním nadpisem.</p>
+  </div>
+  <div class="field-body">
+    <input type="text" class="form-input" data-field="contact_subtitle" placeholder="Salon je otevřen pouze na objednávky — domluvíme si termín osobně..." maxlength="200">
+  </div>
+</div>
+
+<div class="section-header" id="section-cookies" style="margin-top:40px">
+  <div class="section-header-text">
+    <div class="section-eyebrow">— cookies banner —</div>
+    <h2 class="section-main-title">Lišta s cookies</h2>
+    <p class="section-description">Vyskakovací lišta která se zobrazí klientce při první návštěvě.</p>
+  </div>
+</div>
+
+<div class="field-card">
+  <div class="field-header">
+    <div class="field-title-row"><div class="field-number">1</div><h3 class="field-title">Text v liště</h3></div>
+    <p class="field-subtitle">Hlavní text který klientka uvidí v cookies liště.</p>
+  </div>
+  <div class="field-body">
+    <textarea class="form-textarea" data-field="cookie_text" placeholder="Tento web používá cookies..." maxlength="300"></textarea>
+    <div class="field-meta">
+      <span class="field-hint">Krátký, výstižný text</span>
+      <span class="field-counter" id="counter-cookie_text">0 / 300</span>
+    </div>
+  </div>
+</div>
+
+<div class="field-card">
+  <div class="field-header">
+    <div class="field-title-row"><div class="field-number">2</div><h3 class="field-title">Tlačítko "Přijmout"</h3></div>
+    <p class="field-subtitle">Text na zeleném tlačítku v liště.</p>
+  </div>
+  <div class="field-body">
+    <input type="text" class="form-input" data-field="cookie_btn_accept" placeholder="Přijmout vše" maxlength="40">
+  </div>
+</div>
+
+<div class="field-card">
+  <div class="field-header">
+    <div class="field-title-row"><div class="field-number">3</div><h3 class="field-title">Tlačítko "Odmítnout"</h3></div>
+    <p class="field-subtitle">Text na druhém tlačítku v liště.</p>
+  </div>
+  <div class="field-body">
+    <input type="text" class="form-input" data-field="cookie_btn_reject" placeholder="Odmítnout" maxlength="40">
+  </div>
+</div>
+
+<div class="save-bar">
+  <div class="save-status" id="save-status-nastaveni">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 6L9 17l-5-5"/></svg>
+    <span>Vše uloženo</span>
+  </div>
+  <button class="btn-save" data-action="save-settings">Uložit nastavení</button>
+</div>
+
+</div>
+
+</div>
+
+<div class="toast" id="toast">
+  <svg id="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 6L9 17l-5-5"/></svg>
+  <span id="toast-message"></span>
+</div>
+
+<script>
+console.log('=== ADMIN SCRIPT STARTED ===');
+let unsavedChanges = {};
+let currentTab = 'hlavni';
+console.log('=== Variables initialized ===');
+
+const SECTIONS = [
+  { id: 'hero',       label: 'Úvod webu',          tab: 'hlavni',    sectionId: 'section-hero' },
+  { id: 'about',      label: 'O salonu',           tab: 'hlavni',    sectionId: 'section-about' },
+  { id: 'why',        label: 'Proč to dělám',      tab: 'hlavni',    sectionId: 'section-why' },
+  { id: 'styliste',   label: 'Stylisté',           tab: 'styliste',  sectionId: null },
+  { id: 'collections',label: 'Nominované kolekce', tab: 'kolekce',   sectionId: null },
+  { id: 'gallery',    label: 'Galerie prací',      tab: 'galerie',   sectionId: null },
+  { id: 'reference',  label: 'Reference',          tab: 'reference', sectionId: null },
+  { id: 'cenik',      label: 'Ceník služeb',       tab: 'cenik',     sectionId: null },
+  { id: 'blog',       label: 'Blog',               tab: 'blog',      sectionId: null },
+  { id: 'faq',        label: 'Časté dotazy',       tab: 'faq',       sectionId: null },
+  { id: 'contact',    label: 'Kontakt + adresa',   tab: 'nastaveni', sectionId: 'section-contact-header' },
+  { id: 'closing',    label: 'Závěr + citát',      tab: 'hlavni',    sectionId: 'section-closing' },
+  { id: 'cookies',    label: 'Cookies banner',     tab: 'nastaveni', sectionId: 'section-cookies' }
+];
+
+// ============================================
+// INICIALIZACE — funguje i když DOM už je loaded
+// ============================================
+function initAdmin() {
+  console.log('initAdmin starting...');
+  
+  try { setupTabs(); console.log('setupTabs OK'); } catch(e) { console.error('setupTabs failed:', e); }
+  try { setupCharCounters(); console.log('setupCharCounters OK'); } catch(e) { console.error('setupCharCounters failed:', e); }
+  try { setupLivePreview(); console.log('setupLivePreview OK'); } catch(e) { console.error('setupLivePreview failed:', e); }
+  try { setupAutoDetect(); console.log('setupAutoDetect OK'); } catch(e) { console.error('setupAutoDetect failed:', e); }
+  try { renderMiniWeb(); console.log('renderMiniWeb OK'); } catch(e) { console.error('renderMiniWeb failed:', e); }
+  
+  try {
+    google.script.run
+      .withSuccessHandler(email => {
+        const el = document.getElementById('user-email');
+        if (el) el.textContent = email || 'admin';
+      })
+      .withFailureHandler(err => {
+        console.error('getCurrentUserEmail failed:', err);
+        const el = document.getElementById('user-email');
+        if (el) el.textContent = 'admin';
+      })
+      .getCurrentUserEmail();
+  } catch(e) { console.error('getCurrentUserEmail call failed:', e); }
+  
+  try { loadTexts(); } catch(e) { console.error('loadTexts failed:', e); }
+  try { loadSettings(); } catch(e) { console.error('loadSettings failed:', e); }
+  
+  console.log('initAdmin DONE');
+}
+
+// Spusť init podle stavu DOM
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initAdmin);
+} else {
+  // DOM už je loaded — spusť hned
+  initAdmin();
+}
+
+function setupTabs() {
+  // Event delegation: jeden listener pro celý dokument
+  document.addEventListener('click', function(e) {
+    const target = e.target;
+    const button = target.closest('[data-tab]') || target.closest('[data-action]') || target.closest('#btn-publish') || target.closest('#mini-web-toggle');
+    if (!button) return;
+    
+    // TABS
+    if (button.hasAttribute('data-tab')) {
+      switchTab(button.getAttribute('data-tab'));
+      return;
+    }
+    
+    // PUBLISH
+    if (button.id === 'btn-publish') {
+      openPublishModal();
+      return;
+    }
+    
+    // MINI WEB TOGGLE
+    if (button.id === 'mini-web-toggle') {
+      toggleMiniWeb();
+      return;
+    }
+    
+    // DATA-ACTION buttons
+    const action = button.getAttribute('data-action');
+    if (action === 'toggle-help') {
+      toggleHelp(button);
+    } else if (action === 'save-texts') {
+      saveTexts(button.getAttribute('data-tab') || 'hlavni');
+    } else if (action === 'save-settings') {
+      saveSettings();
+    } else if (action === 'save-cenik') {
+      saveCenik();
+    }
+  });
+  console.log('Tab listeners installed via event delegation');
+}
+
+function switchTab(tabName) {
+  const hasUnsaved = Object.keys(unsavedChanges).length > 0;
+  if (hasUnsaved) {
+    if (!confirm('Máte neuložené změny. Opravdu chcete přepnout? Změny budou ztraceny.')) return;
+    unsavedChanges = {};
+  }
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+  document.getElementById(`pane-${tabName}`).classList.add('active');
+  currentTab = tabName;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  renderMiniWeb();
+  
+  // Lazy load tab data
+  if (tabName === 'cenik') {
+    loadCenik();
+  }
+}
+
+function toggleMiniWeb() {
+  const canvas = document.getElementById('mini-web-canvas');
+  const toggle = document.getElementById('mini-web-toggle');
+  canvas.classList.toggle('expanded');
+  toggle.classList.toggle('expanded');
+}
+
+function toggleHelp(btn) {
+  btn.classList.toggle('expanded');
+  btn.nextElementSibling.classList.toggle('expanded');
+}
+
+function renderMiniWeb() {
+  const W = 720, H = 24, G = 4;
+  const totalH = SECTIONS.length * (H + G) + 8;
+  
+  let svg = `<svg width="${W}" height="${totalH}" viewBox="0 0 ${W} ${totalH}" style="max-width:100%;height:auto">`;
+  
+  SECTIONS.forEach((sec, i) => {
+    const y = 4 + i * (H + G);
+    const isActive = sec.tab === currentTab;
+    const fill = isActive ? '#1a1a1a' : '#FFFFFF';
+    const stroke = isActive ? '#C28840' : '#EFE5D0';
+    const textColor = isActive ? '#C28840' : '#888';
+    const sw = isActive ? 1 : 0.5;
+    
+    svg += `<g style="cursor:pointer" onclick="window.navigateToSection('${sec.id}')">`;
+    svg += `<rect x="60" y="${y}" width="${W - 120}" height="${H}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" rx="2"/>`;
+    svg += `<text x="76" y="${y + H/2 + 4}" font-family="Inter,sans-serif" font-size="11" font-weight="500" fill="${textColor}" letter-spacing="1">${sec.label}</text>`;
+    if (isActive) {
+      svg += `<text x="${W - 80}" y="${y + H/2 + 4}" font-family="Inter,sans-serif" font-size="9" fill="#C28840" text-anchor="end" letter-spacing="2">→ ZDE</text>`;
+    }
+    svg += `</g>`;
+  });
+  
+  svg += `</svg>`;
+  document.getElementById('mini-web-svg-container').innerHTML = svg;
+}
+
+function navigateToSection(sectionId) {
+  const sec = SECTIONS.find(s => s.id === sectionId);
+  if (!sec) return;
+  
+  if (sec.tab !== currentTab) {
+    switchTab(sec.tab);
+    if (sec.sectionId) {
+      setTimeout(() => {
+        const el = document.getElementById(sec.sectionId);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 250);
+    }
+  } else if (sec.sectionId) {
+    const el = document.getElementById(sec.sectionId);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+function setupCharCounters() {
+  document.querySelectorAll('[maxlength]').forEach(input => {
+    const max = parseInt(input.getAttribute('maxlength'));
+    const field = input.dataset.field;
+    if (!field) return;
+    const counter = document.getElementById('counter-' + field);
+    if (!counter) return;
+    
+    const update = () => {
+      const len = input.value.length;
+      counter.textContent = `${len} / ${max}`;
+      counter.classList.remove('warning', 'danger');
+      if (len > max * 0.9) counter.classList.add('warning');
+      if (len === max) counter.classList.add('danger');
+    };
+    input.addEventListener('input', update);
+    update();
+  });
+}
+
+function setupLivePreview() {
+  document.querySelectorAll('[data-italic="true"]').forEach(input => {
+    const field = input.dataset.field;
+    
+    const update = () => {
+      const text = input.value || '...';
+      const html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/\*([^*]+)\*/g, '<em>$1</em>');
+      
+      const localPreview = document.getElementById('preview-' + field);
+      if (localPreview) localPreview.innerHTML = html;
+      
+      const ctxPreview = input.dataset.preview ? document.getElementById(input.dataset.preview) : null;
+      if (ctxPreview) ctxPreview.innerHTML = html;
+    };
+    
+    input.addEventListener('input', update);
+    update();
+  });
+  
+  document.querySelectorAll('[data-preview]:not([data-italic])').forEach(input => {
+    const ctxPreview = document.getElementById(input.dataset.preview);
+    if (!ctxPreview) return;
+    const update = () => { ctxPreview.textContent = input.value || ''; };
+    input.addEventListener('input', update);
+    update();
+  });
+}
+
+function setupAutoDetect() {
+  document.querySelectorAll('[data-field]').forEach(input => {
+    input.addEventListener('input', () => {
+      unsavedChanges[input.dataset.field] = input.value;
+      updateSaveStatus(currentTab, false);
+    });
+  });
+}
+
+function updateSaveStatus(tab, saved) {
+  const status = document.getElementById('save-status-' + tab);
+  if (!status) return;
+  const span = status.querySelector('span');
+  if (saved) {
+    span.textContent = 'Vše uloženo';
+    status.classList.remove('unsaved');
+  } else {
+    span.textContent = 'Neuložené změny';
+    status.classList.add('unsaved');
+  }
+}
+
+function callAPI(action, params, onSuccess, onError) {
+  google.script.run
+    .withSuccessHandler(result => {
+      try {
+        let data = result;
+        if (typeof result === 'string') data = JSON.parse(result);
+        if (!data || typeof data !== 'object') throw new Error('Neplatná odpověď ze serveru');
+        if (data.ok) onSuccess(data);
+        else (onError || (e => showToast('Chyba: ' + e, 'error')))(data.error || 'unknown');
+      } catch (e) {
+        console.error('Parse error:', e, result);
+        showToast('Chyba parsování: ' + (e.message || e), 'error');
+      }
+    })
+    .withFailureHandler(err => {
+      console.error('API error:', err);
+      (onError || (e => showToast('Chyba serveru: ' + e, 'error')))(err.message || err);
+    })
+    .handleAdminAction({ action, ...params });
+}
+
+function loadTexts() {
+  callAPI('get-texts', {}, (data) => {
+    const texts = data.texts || {};
+    Object.keys(texts).forEach(key => {
+      const el = document.querySelector(`[data-field="${key}"]`);
+      if (el) {
+        el.value = texts[key];
+        el.dispatchEvent(new Event('input'));
+      }
+    });
+    // Hero photo preview
+    if (texts.hero_photo) {
+      showPhotoPreview('hero-photo-zone', texts.hero_photo);
+    }
+    unsavedChanges = {};
+    updateSaveStatus('hlavni', true);
+  });
+}
+
+function saveTexts(tab) {
+  if (Object.keys(unsavedChanges).length === 0) {
+    showToast('Žádné změny k uložení');
+    return;
+  }
+  callAPI('save-texts', { texts: JSON.stringify(unsavedChanges) }, () => {
+    showToast('Změny uloženy', 'success');
+    unsavedChanges = {};
+    updateSaveStatus(tab, true);
+  });
+}
+
+function loadSettings() {
+  callAPI('get-settings', {}, (data) => {
+    const settings = data.settings || {};
+    Object.keys(settings).forEach(key => {
+      const el = document.querySelector(`[data-field="${key}"]`);
+      if (el) el.value = settings[key];
+    });
+  });
+}
+
+function saveSettings() {
+  if (Object.keys(unsavedChanges).length === 0) {
+    showToast('Žádné změny k uložení');
+    return;
+  }
+  callAPI('save-settings', { settings: JSON.stringify(unsavedChanges) }, () => {
+    showToast('Nastavení uloženo', 'success');
+    unsavedChanges = {};
+    updateSaveStatus('nastaveni', true);
+  });
+}
+
+// ============================================
+// UPLOAD FOTKY
+// ============================================
+function handlePhotoUpload(input, fieldKey, zoneId) {
+  const file = input.files[0];
+  if (!file) return;
+  
+  if (file.size > 5 * 1024 * 1024) {
+    showToast('Fotka je moc velká (max 5 MB)', 'error');
+    return;
+  }
+  
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const dataUrl = e.target.result;
+    const zone = document.getElementById(zoneId);
+    
+    // Show loading state
+    zone.innerHTML = '<div style="padding:20px;color:var(--text-muted)">Nahrávám fotku...</div>';
+    
+    callAPI('upload-photo', { 
+      fieldKey: fieldKey, 
+      fileName: file.name, 
+      fileData: dataUrl 
+    }, (data) => {
+      showPhotoPreview(zoneId, data.url, data.fileId, fieldKey);
+      showToast('Fotka nahrána', 'success');
+    }, (err) => {
+      showToast('Chyba uploadu: ' + err, 'error');
+      // Reset zone
+      window.location.reload();
+    });
+  };
+  reader.readAsDataURL(file);
+}
+
+function showPhotoPreview(zoneId, url, fileId, fieldKey) {
+  const zone = document.getElementById(zoneId);
+  zone.classList.add('has-image');
+  zone.onclick = null;
+  zone.innerHTML = `
+    <div class="upload-preview">
+      <div class="upload-preview-img"><img src="${url}" alt=""></div>
+      <div class="upload-preview-info">
+        <div class="upload-preview-name">Fotka nahrána ✓</div>
+        <div class="upload-preview-actions">
+          <button class="upload-action-btn" onclick="window.changePhoto('${zoneId}', '${fieldKey}')">Změnit</button>
+          <button class="upload-action-btn danger" onclick="window.removePhoto('${zoneId}', '${fieldKey}')">Odstranit</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function changePhoto(zoneId, fieldKey) {
+  const input = document.querySelector(`#${zoneId.replace('-zone', '-input')}`);
+  if (input) input.click();
+}
+
+function removePhoto(zoneId, fieldKey) {
+  if (!confirm('Opravdu odstranit fotku?')) return;
+  callAPI('remove-photo', { fieldKey: fieldKey }, () => {
+    showToast('Fotka odstraněna', 'success');
+    window.location.reload();
+  });
+}
+
+
+// ============================================
+// CENÍK — Tab Ceník (Balíček 2C)
+// ============================================
+const MAX_SERVICES = 12;
+let servicesData = [];
+let cenikStylists = [];
+let cenikUnsavedChanges = false;
+
+function loadCenik() {
+  // 1. Načíst stylisty pro sloupce
+  callAPI('list-stylists-for-cenik', {}, function(data) {
+    cenikStylists = data.stylists || [];
+    renderCenikStylistsList();
+    // 2. Načíst služby
+    callAPI('list-services', {}, function(data) {
+      servicesData = data.services || [];
+      renderServices();
+    });
+  });
+  
+  // 3. Načíst nadpisy sekce
+  callAPI('get-cenik-section', {}, function(data) {
+    var texts = data.texts || {};
+    Object.keys(texts).forEach(function(key) {
+      var el = document.querySelector('[data-field="' + key + '"][data-section="cenik"]');
+      if (el) {
+        el.value = texts[key];
+        el.dispatchEvent(new Event('input'));
+      }
+    });
+  });
+}
+
+function renderCenikStylistsList() {
+  var container = document.getElementById('cenik-stylists-list');
+  if (!container) return;
+  
+  if (cenikStylists.length === 0) {
+    container.innerHTML = '<div style="color:var(--text-muted);font-style:italic;font-size:13px;">Žádní aktivní stylisté. Přidejte je v Tabu Stylisté.</div>';
+    return;
+  }
+  
+  // Použijeme DOM API místo template literálů (Apps Script bezpečné)
+  container.innerHTML = '';
+  cenikStylists.forEach(function(stylist, idx) {
+    var badge = document.createElement('div');
+    badge.className = 'cenik-stylist-badge';
+    
+    var num = document.createElement('span');
+    num.className = 'cenik-stylist-badge-num';
+    num.textContent = String(idx + 1);
+    badge.appendChild(num);
+    
+    var name = document.createTextNode(stylist.name);
+    badge.appendChild(name);
+    
+    container.appendChild(badge);
+  });
+  
+  // Přidat placeholder badge pokud méně než 4
+  for (var j = cenikStylists.length; j < 4; j++) {
+    var emptyBadge = document.createElement('div');
+    emptyBadge.className = 'cenik-stylist-badge empty';
+    emptyBadge.textContent = 'Sloupec ' + (j + 1) + ' (volný)';
+    container.appendChild(emptyBadge);
+  }
+}
+
+function renderServices() {
+  var container = document.getElementById('services-container');
+  if (!container) return;
+  
+  // Vždy zobrazit MAX_SERVICES slotů
+  while (servicesData.length < MAX_SERVICES) {
+    servicesData.push({
+      id: 'svc_' + (servicesData.length + 1),
+      order: servicesData.length + 1,
+      name: '',
+      description: '',
+      stylist1_price: '',
+      stylist2_price: '',
+      stylist3_price: '',
+      stylist4_price: '',
+      active: true
+    });
+  }
+  
+  container.innerHTML = '';
+  servicesData.forEach(function(svc, idx) {
+    container.appendChild(buildServiceCard(svc, idx));
+  });
+  
+  attachServiceEventListeners();
+}
+
+function buildServiceCard(svc, idx) {
+  // Použijeme čistě DOM API — žádné template literály s ${}
+  var card = document.createElement('div');
+  card.className = 'service-card' + (svc.name ? '' : ' empty');
+  card.setAttribute('data-service-idx', String(idx));
+  
+  // HEADER
+  var header = document.createElement('div');
+  header.className = 'service-card-header';
+  
+  var num = document.createElement('div');
+  num.className = 'service-card-num';
+  num.textContent = String(idx + 1);
+  header.appendChild(num);
+  
+  var title = document.createElement('div');
+  title.className = 'service-card-title';
+  title.textContent = svc.name || '(prázdný slot — vyplňte název)';
+  header.appendChild(title);
+  
+  var toggleLabel = document.createElement('label');
+  toggleLabel.className = 'service-card-toggle';
+  var toggleInput = document.createElement('input');
+  toggleInput.type = 'checkbox';
+  toggleInput.checked = svc.active !== false;
+  toggleInput.setAttribute('data-service-idx', String(idx));
+  toggleInput.setAttribute('data-service-field', 'active');
+  toggleLabel.appendChild(toggleInput);
+  var toggleText = document.createElement('span');
+  toggleText.textContent = 'Zobrazit na webu';
+  toggleLabel.appendChild(toggleText);
+  header.appendChild(toggleLabel);
+  
+  card.appendChild(header);
+  
+  // BODY
+  var body = document.createElement('div');
+  body.className = 'service-card-body';
+  
+  // Název služby
+  var nameRow = document.createElement('div');
+  nameRow.className = 'service-name-row';
+  
+  var nameInput = document.createElement('input');
+  nameInput.type = 'text';
+  nameInput.className = 'form-input';
+  nameInput.placeholder = 'Název služby (např. Dámský střih)';
+  nameInput.maxLength = 60;
+  nameInput.value = svc.name || '';
+  nameInput.setAttribute('data-service-idx', String(idx));
+  nameInput.setAttribute('data-service-field', 'name');
+  nameRow.appendChild(nameInput);
+  
+  var descInput = document.createElement('input');
+  descInput.type = 'text';
+  descInput.className = 'form-input';
+  descInput.placeholder = 'Krátký popis služby (1 řádek)';
+  descInput.maxLength = 150;
+  descInput.value = svc.description || '';
+  descInput.setAttribute('data-service-idx', String(idx));
+  descInput.setAttribute('data-service-field', 'description');
+  nameRow.appendChild(descInput);
+  
+  body.appendChild(nameRow);
+  
+  // Ceny pro stylisty
+  if (cenikStylists.length > 0) {
+    var pricesRow = document.createElement('div');
+    pricesRow.className = 'service-prices-row';
+    pricesRow.style.gridTemplateColumns = 'repeat(' + Math.min(cenikStylists.length, 4) + ', 1fr)';
+    
+    for (var s = 0; s < Math.min(cenikStylists.length, 4); s++) {
+      var priceField = document.createElement('div');
+      priceField.className = 'service-price-field';
+      
+      var label = document.createElement('label');
+      label.className = 'service-price-label';
+      label.textContent = cenikStylists[s].name;
+      priceField.appendChild(label);
+      
+      var wrap = document.createElement('div');
+      wrap.className = 'service-price-input-wrap';
+      
+      var priceInput = document.createElement('input');
+      priceInput.type = 'text';
+      priceInput.className = 'service-price-input';
+      priceInput.placeholder = '—';
+      priceInput.value = svc['stylist' + (s + 1) + '_price'] || '';
+      priceInput.setAttribute('data-service-idx', String(idx));
+      priceInput.setAttribute('data-service-field', 'stylist' + (s + 1) + '_price');
+      wrap.appendChild(priceInput);
+      
+      var suffix = document.createElement('span');
+      suffix.className = 'service-price-suffix';
+      suffix.textContent = 'Kč';
+      wrap.appendChild(suffix);
+      
+      priceField.appendChild(wrap);
+      pricesRow.appendChild(priceField);
+    }
+    body.appendChild(pricesRow);
+  } else {
+    var noStylistsMsg = document.createElement('div');
+    noStylistsMsg.style.cssText = 'padding:14px;background:var(--bg-cream);border:0.5px dashed var(--border-strong);border-radius:2px;font-size:12px;color:var(--text-muted);font-style:italic;text-align:center;margin-top:10px;';
+    noStylistsMsg.textContent = 'Cenové sloupce se zobrazí po přidání stylistů v Tabu Stylisté.';
+    body.appendChild(noStylistsMsg);
+  }
+  
+  card.appendChild(body);
+  return card;
+}
+
+function attachServiceEventListeners() {
+  document.querySelectorAll('[data-service-idx][data-service-field]').forEach(function(input) {
+    var isCheckbox = input.type === 'checkbox';
+    input.addEventListener(isCheckbox ? 'change' : 'input', function() {
+      var idx = parseInt(input.getAttribute('data-service-idx'));
+      var field = input.getAttribute('data-service-field');
+      var value = isCheckbox ? input.checked : input.value;
+      
+      if (servicesData[idx]) {
+        servicesData[idx][field] = value;
+      }
+      
+      // Update card empty state + title
+      var card = input.closest('.service-card');
+      if (card && servicesData[idx]) {
+        card.classList.toggle('empty', !servicesData[idx].name);
+        card.classList.add('unsaved');
+        if (field === 'name') {
+          var titleEl = card.querySelector('.service-card-title');
+          if (titleEl) {
+            titleEl.textContent = servicesData[idx].name || '(prázdný slot — vyplňte název)';
+          }
+        }
+      }
+      
+      cenikUnsavedChanges = true;
+      updateSaveStatus('cenik', false);
+    });
+  });
+}
+
+function saveCenik() {
+  // Filtrovat: uložit jen služby s názvem
+  var toSave = servicesData.filter(function(s) { return s.name && s.name.trim() !== ''; });
+  
+  // Section texts
+  var sectionTexts = {};
+  Object.keys(unsavedChanges).forEach(function(k) {
+    if (k.indexOf('cenik_') === 0) sectionTexts[k] = unsavedChanges[k];
+  });
+  
+  var hasServiceChanges = cenikUnsavedChanges;
+  var hasSectionChanges = Object.keys(sectionTexts).length > 0;
+  
+  if (!hasServiceChanges && !hasSectionChanges) {
+    showToast('Žádné změny k uložení');
+    return;
+  }
+  
+  // Save section first
+  var saveSection = function(cb) {
+    if (!hasSectionChanges) { cb(); return; }
+    callAPI('save-cenik-section', { texts: JSON.stringify(sectionTexts) }, function() {
+      Object.keys(sectionTexts).forEach(function(k) { delete unsavedChanges[k]; });
+      cb();
+    });
+  };
+  
+  saveSection(function() {
+    if (!hasServiceChanges) {
+      updateSaveStatus('cenik', true);
+      showToast('Změny uloženy', 'success');
+      return;
+    }
+    callAPI('save-services', { services: JSON.stringify(toSave) }, function() {
+      cenikUnsavedChanges = false;
+      updateSaveStatus('cenik', true);
+      showToast('Ceník uložen', 'success');
+      // Reload
+      loadCenik();
+    });
+  });
+}
+
+function openPublishModal() {
+  if (Object.keys(unsavedChanges).length > 0) {
+    if (!confirm('Máte neuložené změny. Chcete je nejdřív uložit?')) return;
+    if (currentTab === 'hlavni') saveTexts('hlavni');
+    else if (currentTab === 'nastaveni') saveSettings();
+  }
+  showToast('Publikování bude funkční po dokončení všech tabů');
+}
+
+function showToast(message, type = '') {
+  const toast = document.getElementById('toast');
+  const msg = document.getElementById('toast-message');
+  msg.textContent = message;
+  toast.className = 'toast active ' + type;
+  setTimeout(() => toast.classList.remove('active'), 3000);
+}
+
+// ============================================
+// VYSTAV FUNKCE NA WINDOW
+// (Apps Script iframe potřebuje funkce na window scope
+//  aby onclick="funkce()" v HTML fungoval)
+// ============================================
+window.openPublishModal = openPublishModal;
+window.toggleMiniWeb = toggleMiniWeb;
+window.toggleHelp = toggleHelp;
+window.navigateToSection = navigateToSection;
+window.saveTexts = saveTexts;
+window.saveSettings = saveSettings;
+window.handlePhotoUpload = handlePhotoUpload;
+window.changePhoto = changePhoto;
+window.removePhoto = removePhoto;
+window.showPhotoPreview = showPhotoPreview;
+window.showToast = showToast;
+window.switchTab = switchTab;
+window.loadCenik = loadCenik;
+window.saveCenik = saveCenik;
+
+console.log('=== ADMIN SCRIPT FINISHED ===');
+console.log('typeof switchTab:', typeof switchTab);
+console.log('typeof window.switchTab:', typeof window.switchTab);
+console.log('typeof MAX_STYLISTS:', typeof MAX_STYLISTS);
+</script>
+
+</body>
+</html>

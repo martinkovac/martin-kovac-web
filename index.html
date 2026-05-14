@@ -1425,26 +1425,49 @@
     color: #fff;
   }
   
-  /* === KARUSEL ARCHŮ === */
+  /* === KARUSEL ARCHŮ — horizontální scroll s snap === */
   .gallery-carousel {
-    max-width: 1400px;
+    max-width: 100%;
     margin: 0 auto;
     position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-  }
-  .gallery-carousel-viewport {
-    flex: 1;
     overflow: hidden;
-    display: flex;
-    justify-content: center;
+    padding: 0;
   }
-  ..gallery-arch-display {
+  .gallery-carousel-track {
+    display: flex;
+    gap: 60px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: var(--gold) transparent;
+    padding: 0 calc(50% - 600px) 30px;
+    scroll-padding: 0 calc(50% - 600px);
+  }
+  /* Pretty webkit scrollbar */
+  .gallery-carousel-track::-webkit-scrollbar {
+    height: 8px;
+  }
+  .gallery-carousel-track::-webkit-scrollbar-track {
+    background: transparent;
+    margin: 0 60px;
+  }
+  .gallery-carousel-track::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 4px;
+    transition: background 0.2s ease;
+  }
+  .gallery-carousel-track:hover::-webkit-scrollbar-thumb {
+    background: var(--gold);
+  }
+  
+  .gallery-arch-display {
     position: relative;
     background: transparent;
     transition: opacity 0.4s ease;
+    scroll-snap-align: center;
+    flex-shrink: 0;
     /* Velikost se nastaví dynamicky JS (square arch) */
   }
   .gallery-arch-display.transitioning {
@@ -1550,33 +1573,6 @@
     margin-bottom: 16px;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
-  
-  /* Carousel arrows */
-  .gallery-carousel-arrow {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: var(--bg-cream);
-    border: 1px solid var(--border);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text);
-    transition: all 0.25s ease;
-    flex-shrink: 0;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-  }
-  .gallery-carousel-arrow:hover:not(:disabled) {
-    background: var(--gold);
-    border-color: var(--gold);
-    color: #fff;
-    transform: scale(1.08);
-  }
-  .gallery-carousel-arrow:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-  }
   
   /* Page dots */
   .gallery-page-dots {
@@ -2967,24 +2963,14 @@
     <button class="gallery-filter-pill" data-stylist-filter="Renata">Renata</button>
   </div>
 
-  <!-- Karusel archů -->
+  <!-- Karusel archů — horizontální scroll -->
   <div class="gallery-carousel fade-in">
-    <button class="gallery-carousel-arrow gallery-carousel-prev" aria-label="Předchozí stránka">
-      <svg viewBox="0 0 24 24" width="24" height="24"><path d="M15 6 L9 12 L15 18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </button>
-    
-    <div class="gallery-carousel-viewport">
-      <div class="gallery-arch-display" id="gallery-arch-display">
-        <div class="gallery-loading">
-          <div class="gallery-loading-spinner"></div>
-          <div>Načítám galerii…</div>
-        </div>
+    <div class="gallery-carousel-track" id="gallery-carousel-track">
+      <div class="gallery-loading">
+        <div class="gallery-loading-spinner"></div>
+        <div>Načítám galerii…</div>
       </div>
     </div>
-    
-    <button class="gallery-carousel-arrow gallery-carousel-next" aria-label="Další stránka">
-      <svg viewBox="0 0 24 24" width="24" height="24"><path d="M9 6 L15 12 L9 18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </button>
   </div>
   
   <!-- Page indicators -->
@@ -3737,6 +3723,9 @@
   // ==========================================================
   
   // Public API URL (Apps Script deployment)
+  // Primární zdroj: statický soubor galerie.json v repu (instant load, žádný API call)
+  // Fallback: live Apps Script API (pokud admin ještě nepublikoval)
+  const GALLERY_STATIC_URL = './galerie.json?v=' + Date.now();
   const GALLERY_API_URL = 'https://script.google.com/macros/s/AKfycbyqRRL1Fhqft9OD_GyOLXGJdWJEl2Ha3vJ5pGUdB6R6pxjKEyi7INS4UxFv1zUwytUC/exec?type=galerie';
   
   // Logo data URL (zlatá hlava na černém pozadí)
@@ -3750,6 +3739,23 @@
   
   // === FETCH ===
   async function loadGalleryFromAPI() {
+    // Zkus prvně statický soubor (instant)
+    try {
+      const res = await fetch(GALLERY_STATIC_URL, { cache: 'no-cache' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.photos) {
+          galleryData = data;
+          renderGalleryArch();
+          renderGalleryDots();
+          return;
+        }
+      }
+    } catch (err) {
+      // Soubor neexistuje, pokračuj na fallback
+    }
+    
+    // Fallback: Apps Script API (pokud galerie.json ještě neexistuje)
     try {
       const res = await fetch(GALLERY_API_URL);
       const data = await res.json();
@@ -3767,65 +3773,85 @@
   }
   
   function showGalleryEmpty() {
-    const display = document.getElementById('gallery-arch-display');
-    if (display) {
-      display.innerHTML = '<div class="gallery-loading"><div style="font-size:40px;margin-bottom:14px;">🎨</div><div>Galerie se právě připravuje.<br>Vraťte se brzy zpět.</div></div>';
+    const track = document.getElementById('gallery-carousel-track');
+    if (track) {
+      track.innerHTML = '<div class="gallery-loading"><div style="font-size:40px;margin-bottom:14px;">🎨</div><div>Galerie se právě připravuje.<br>Vraťte se brzy zpět.</div></div>';
     }
   }
   
   // === RENDER ARCH ===
   function renderGalleryArch() {
-    const display = document.getElementById('gallery-arch-display');
-    if (!display) return;
+    const track = document.getElementById('gallery-carousel-track');
+    if (!track) return;
     
     const archSize = galleryData.settings.arch_velikost_px || 1200;
+    const totalPages = galleryData.settings.pocet_stranek || 1;
     
-    // Items na aktuální stránce
-    let pageItems = galleryData.photos.filter(p => (parseInt(p.strana) || 1) === galleryCurrentPage);
+    // Vyčisti track
+    track.innerHTML = '';
     
-    // Filter podle stylisty (jen pro fotky — citáty/loga vždy zobrazit nedimmed)
-    pageItems = pageItems.map(p => {
-      let dimmed = false;
-      if (p.type === 'photo' && galleryStylistFilter !== 'all' && p.stylist !== galleryStylistFilter) {
-        dimmed = true;
-      }
-      return { ...p, _dimmed: dimmed };
-    });
-    
-    // Build HTML
-    display.style.width = archSize + 'px';
-    display.style.height = archSize + 'px';
-    display.classList.add('transitioning');
-    
-    setTimeout(() => {
-      display.innerHTML = '';
+    // Pro každou stránku vyrobíme arch
+    for (let page = 1; page <= totalPages; page++) {
+      const archDisplay = document.createElement('div');
+      archDisplay.className = 'gallery-arch-display';
+      archDisplay.setAttribute('data-page', page);
+      archDisplay.style.width = archSize + 'px';
+      archDisplay.style.height = archSize + 'px';
       
-      if (pageItems.length === 0) {
-        display.innerHTML = '<div class="gallery-loading"><div style="font-size:40px;margin-bottom:14px;">📷</div><div>Galerie je prázdná.</div></div>';
-        display.classList.remove('transitioning');
-        return;
-      }
+      // Items na téhle stránce
+      let pageItems = galleryData.photos.filter(p => (parseInt(p.strana) || 1) === page);
       
-      // Sort by z-index ASC tak aby vyšší byly nahoře (CSS pak respektuje z-index)
-      pageItems.forEach(item => {
-        const cell = buildGalleryArchCell(item);
-        display.appendChild(cell);
+      // Filter podle stylisty (jen pro fotky)
+      pageItems = pageItems.map(p => {
+        let dimmed = false;
+        if (p.type === 'photo' && galleryStylistFilter !== 'all' && p.stylist !== galleryStylistFilter) {
+          dimmed = true;
+        }
+        return { ...p, _dimmed: dimmed };
       });
       
-      display.classList.remove('transitioning');
+      if (pageItems.length === 0 && totalPages === 1) {
+        archDisplay.innerHTML = '<div class="gallery-loading"><div style="font-size:40px;margin-bottom:14px;">📷</div><div>Galerie je prázdná.</div></div>';
+      } else {
+        pageItems.forEach(item => {
+          const cell = buildGalleryArchCell(item);
+          archDisplay.appendChild(cell);
+        });
+      }
       
-      // Aplikuj responsive scale
-      applyGalleryArchScale();
-      
-      // Update lightbox seznam — jen fotky se zobrazeným filterem
-      updateLightboxPhotoList(pageItems);
-    }, 200);
+      track.appendChild(archDisplay);
+    }
     
-    // Update arrows
-    const prev = document.querySelector('.gallery-carousel-prev');
-    const next = document.querySelector('.gallery-carousel-next');
-    if (prev) prev.disabled = (galleryCurrentPage <= 1);
-    if (next) next.disabled = (galleryCurrentPage >= (galleryData.settings.pocet_stranek || 1));
+    // Aplikuj responsive scale
+    applyGalleryArchScale();
+    
+    // Update lightbox seznam — všechny fotky se zobrazeným filterem
+    updateLightboxPhotoList();
+    
+    // Update padding na track — center první arch
+    updateCarouselPadding();
+  }
+  
+  function updateCarouselPadding() {
+    const track = document.getElementById('gallery-carousel-track');
+    if (!track) return;
+    const carousel = track.parentElement;
+    if (!carousel) return;
+    
+    // Po scale máme reálné rozměry archů
+    const firstArch = track.querySelector('.gallery-arch-display');
+    if (!firstArch) return;
+    
+    const rect = firstArch.getBoundingClientRect();
+    const archDisplayedWidth = rect.width;
+    const carouselWidth = carousel.clientWidth;
+    
+    // Padding aby první/poslední arch byl centrován při snap
+    const sidePadding = Math.max(20, (carouselWidth - archDisplayedWidth) / 2);
+    track.style.paddingLeft = sidePadding + 'px';
+    track.style.paddingRight = sidePadding + 'px';
+    track.style.scrollPaddingLeft = sidePadding + 'px';
+    track.style.scrollPaddingRight = sidePadding + 'px';
   }
   
   function buildGalleryArchCell(item) {
@@ -3895,28 +3921,51 @@
   
   // === Responsive scale archu === 
   function applyGalleryArchScale() {
-    const display = document.getElementById('gallery-arch-display');
-    if (!display) return;
+    const track = document.getElementById('gallery-carousel-track');
+    if (!track) return;
     
     const archSize = galleryData.settings.arch_velikost_px || 1200;
-    const viewport = display.parentElement; // .gallery-carousel-viewport
-    if (!viewport) return;
+    const carousel = track.parentElement;
+    if (!carousel) return;
     
-    const availableWidth = viewport.clientWidth;
+    // Dostupná šířka pro 1 arch (s margem)
+    const availableWidth = Math.min(carousel.clientWidth - 80, 1400);
+    
+    const archs = track.querySelectorAll('.gallery-arch-display');
     
     if (archSize > availableWidth) {
+      // Scale dolů — arch má svou původní velikost archSize×archSize
+      // ale visuálně se zmenší přes transform scale + zabíraný prostor přes width/height
       const scale = availableWidth / archSize;
-      display.style.transform = 'scale(' + scale + ')';
-      display.style.transformOrigin = 'top center';
-      // Viewport height musí odpovídat scale (jinak zbude prázdné místo)
-      viewport.style.height = (archSize * scale) + 'px';
+      const scaledSize = archSize * scale;
+      
+      archs.forEach(arch => {
+        // Arch má vždy původní rozměry (kvůli absolute children)
+        arch.style.width = archSize + 'px';
+        arch.style.height = archSize + 'px';
+        // Transform scale ho vizuálně zmenší
+        arch.style.transform = 'scale(' + scale + ')';
+        arch.style.transformOrigin = 'top left';
+        // Margin-right negativní vyrovná scale — místo místa po archu zabere scaled prostor
+        arch.style.marginRight = -(archSize - scaledSize) + 'px';
+        arch.style.marginBottom = -(archSize - scaledSize) + 'px';
+      });
     } else {
-      display.style.transform = '';
-      viewport.style.height = '';
+      // Žádný scale
+      archs.forEach(arch => {
+        arch.style.width = archSize + 'px';
+        arch.style.height = archSize + 'px';
+        arch.style.transform = '';
+        arch.style.marginRight = '';
+        arch.style.marginBottom = '';
+      });
     }
+    
+    // Update padding po scale
+    updateCarouselPadding();
   }
   
-  // === Page dots ===
+  // === Page dots — klik scrolluje na danou stránku ===
   function renderGalleryDots() {
     const dots = document.getElementById('gallery-page-dots');
     if (!dots) return;
@@ -3933,16 +3982,64 @@
       dot.className = 'gallery-page-dot' + (i === galleryCurrentPage ? ' active' : '');
       dot.setAttribute('aria-label', 'Strana ' + i);
       dot.addEventListener('click', () => {
-        galleryCurrentPage = i;
-        renderGalleryArch();
-        renderGalleryDots();
+        scrollToGalleryPage(i);
       });
       dots.appendChild(dot);
     }
   }
   
+  // Scroll na danou stránku (klik na dot)
+  function scrollToGalleryPage(pageNum) {
+    const track = document.getElementById('gallery-carousel-track');
+    if (!track) return;
+    const archs = track.querySelectorAll('.gallery-arch-display');
+    const target = archs[pageNum - 1];
+    if (target) {
+      // Spočítej scrollLeft tak aby byl arch centrovaný
+      const trackRect = track.getBoundingClientRect();
+      const targetRect = target.getBoundingClientRect();
+      const offset = (targetRect.left - trackRect.left) + track.scrollLeft;
+      track.scrollTo({
+        left: offset - (trackRect.width - targetRect.width) / 2,
+        behavior: 'smooth'
+      });
+    }
+  }
+  
+  // Update active dot podle scrollu
+  function updateActivePageDot() {
+    const track = document.getElementById('gallery-carousel-track');
+    if (!track) return;
+    const archs = track.querySelectorAll('.gallery-arch-display');
+    if (archs.length === 0) return;
+    
+    const trackRect = track.getBoundingClientRect();
+    const trackCenter = trackRect.left + trackRect.width / 2;
+    
+    let closestPage = 1;
+    let closestDist = Infinity;
+    archs.forEach((arch, idx) => {
+      const archRect = arch.getBoundingClientRect();
+      const archCenter = archRect.left + archRect.width / 2;
+      const dist = Math.abs(archCenter - trackCenter);
+      if (dist < closestDist) {
+        closestDist = dist;
+        closestPage = idx + 1;
+      }
+    });
+    
+    if (closestPage !== galleryCurrentPage) {
+      galleryCurrentPage = closestPage;
+      // Update dots active state
+      const dots = document.querySelectorAll('.gallery-page-dot');
+      dots.forEach((dot, idx) => {
+        dot.classList.toggle('active', (idx + 1) === closestPage);
+      });
+    }
+  }
+  
   // === LIGHTBOX ===
-  function updateLightboxPhotoList(pageItems) {
+  function updateLightboxPhotoList() {
     // Lightbox prochází jen fotky (citáty/loga přeskakují) z VŠECH stránek a aktuálního filtru
     galleryLightboxPhotos = galleryData.photos.filter(p => {
       if (p.type !== 'photo') return false;
@@ -4017,23 +4114,15 @@
     // Load gallery
     loadGalleryFromAPI();
     
-    // Carousel arrows
-    const carouselPrev = document.querySelector('.gallery-carousel-prev');
-    const carouselNext = document.querySelector('.gallery-carousel-next');
-    if (carouselPrev) carouselPrev.addEventListener('click', () => {
-      if (galleryCurrentPage > 1) {
-        galleryCurrentPage--;
-        renderGalleryArch();
-        renderGalleryDots();
-      }
-    });
-    if (carouselNext) carouselNext.addEventListener('click', () => {
-      if (galleryCurrentPage < (galleryData.settings.pocet_stranek || 1)) {
-        galleryCurrentPage++;
-        renderGalleryArch();
-        renderGalleryDots();
-      }
-    });
+    // Scroll tracking — aktualizuje page dot podle scrollu
+    const track = document.getElementById('gallery-carousel-track');
+    if (track) {
+      let scrollTimeout;
+      track.addEventListener('scroll', () => {
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(updateActivePageDot, 50);
+      }, { passive: true });
+    }
     
     // Stylist filter
     document.querySelectorAll('.gallery-filter-pill').forEach(btn => {
